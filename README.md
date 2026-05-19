@@ -92,21 +92,28 @@ sf package install --package 04tao000005cbLRAAY --wait 20
 
 **Latest Version:** 0.1.0.28 (04tao000005cbLRAAY)
 
-### Step 2: Assign Permission Set
+### Step 2: Assign Permission Set (REQUIRED)
 
-Assign the **d26__Agentforce Opportunity Manager Access** permission set to users who need to configure agents:
+**⚠️ IMPORTANT:** Admins must assign themselves the **d26__Agentforce Opportunity Manager Access** permission set to access the setup app.
 
+**Via CLI (assign to yourself):**
 ```bash
 sf org assign permset --name d26__Agentforce_Opportunity_Manager_Access
 ```
 
-Or via Setup:
+**Via Setup UI:**
 1. Go to **Setup → Permission Sets**
-2. Select **Agentforce Opportunity Manager Access**
+2. Search for **"Agentforce Opportunity Manager Access"**
 3. Click **Manage Assignments** → **Add Assignments**
-4. Select users and click **Assign**
+4. Select yourself and other users who need access
+5. Click **Assign**
 
-This grants access to the **Agentforce Opportunity Manager** app and setup tab.
+**What this grants:**
+- Access to the **Agentforce Opportunity Manager** custom app
+- Access to the **Opportunity Agent Setup** tab with setup instructions
+- Required before you can see the app in the App Launcher
+
+**Note:** Without this permission set, the app will not appear in your App Launcher.
 
 ### Step 3: Open the Agentforce Opportunity Manager App
 
