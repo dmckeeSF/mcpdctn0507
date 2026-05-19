@@ -92,24 +92,41 @@ sf package install --package 04tao000005cb5JAAQ --wait 20
 
 **Latest Version:** 0.1.0.24 (04tao000005cb5JAAQ)
 
-### Step 2: Access Setup Page
+### Step 2: Assign Permission Set
 
-Navigate to the **Opportunity Agent Setup** tab for guided setup instructions.
+Assign the **Agentforce Opportunity Manager Access** permission set to users who need to configure agents:
 
-### Step 3: Create Agent in Agent Builder
+```bash
+sf org assign permset --name Agentforce_Opportunity_Manager_Access
+```
 
-1. Go to **Setup → Agent Builder**
-2. Click **New Agent** → Choose **Employee Agent**
-3. Name it **"Opportunity Manager"**
-4. In **Topics & Actions**, search for **"d26__GetOpportunityFieldsAction"** and **"d26__CreateCustomObjectAction"**
-5. Add both actions to your agent
-6. Configure the agent's instructions to:
-   - First call `d26__GetOpportunityFieldsAction` to retrieve available fields
-   - Collect values from the user based on returned field metadata
-   - Call `d26__CreateCustomObjectAction` with the collected values
-7. **Publish** and **Activate** the agent
+Or via Setup:
+1. Go to **Setup → Permission Sets**
+2. Select **Agentforce Opportunity Manager Access**
+3. Click **Manage Assignments** → **Add Assignments**
+4. Select users and click **Assign**
 
-### Step 4 (Optional): Customize Fields
+This grants access to the **Agentforce Opportunity Manager** app and setup tab.
+
+### Step 3: Open the Agentforce Opportunity Manager App
+
+1. Click the App Launcher (waffle icon)
+2. Search for **"Agentforce Opportunity Manager"**
+3. Open the app
+
+The app includes:
+- **Agentforce Studio** tab - Create and manage agents
+- **Opportunity Agent Setup** tab - Step-by-step setup instructions with copy-paste fields
+
+### Step 4: Follow In-App Setup Instructions
+
+The **Opportunity Agent Setup** tab provides:
+- Required permissions checklist
+- Copy-paste fields for agent creation (Name, Developer Name, Description)
+- Agent Script for both packaged and local versions
+- Field set customization instructions
+
+### Step 5 (Optional): Customize Fields
 
 1. Go to **Setup → Object Manager → Opportunity → Field Sets**
 2. Edit **d26__Agentforce_Create_Fields** to add/remove fields
