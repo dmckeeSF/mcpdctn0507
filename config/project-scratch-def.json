@@ -1,0 +1,44 @@
+{
+  "orgName": "AF + DC360 + Tab Next",
+  "edition": "Partner Developer",
+  "hasSampleData": true,
+  "features": [
+    "EnableSetPasswordInApi",
+    "Copilot",
+    "Einstein1AIPlatform",
+    "EINSTEINGPT",
+    "EINSTEINGPTPLATFORM",
+    "EINSTEINGPTPROMPTBUILDER",
+    "EINSTEINGENERATIVESERVICES",
+    "EINSTEINLLMREQUESTSHOURLY",
+    "EinsteinGPTForDevelopers",
+    "Chatbot",
+    "CustomerDataPlatform",
+    "CustomerDataPlatformLite",
+    "MarketingUser",
+    "DevelopmentWave",
+    "TableauEinstein"
+  ],
+  "settings": {
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": "true",
+      "enableUsersAreLightningOnly": "true",
+      "enableLexEndUsersNoSwitching": "true"
+    },
+    "mobileSettings": {
+      "enableS1EncryptedStoragePref2": "false"
+    },
+    "einsteinGptSettings": {
+      "enableEinsteinGptPlatform": "true"
+    },
+    "agentPlatformSettings": {
+      "enableAgentPlatform": "true"
+    },
+    "botSettings": {
+      "enableBots": "true"
+    },
+    "customerDataPlatformSettings": {
+      "enableCustomerDataPlatform": "true"
+    }
+  }
+}

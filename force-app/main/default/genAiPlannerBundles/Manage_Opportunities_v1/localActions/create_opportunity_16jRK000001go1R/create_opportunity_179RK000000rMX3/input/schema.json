@@ -1,0 +1,21 @@
+{
+  "required" : [ ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "configurationName" : {
+      "title" : "Configuration Name",
+      "description" : "Configuration name",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "fieldValuesJson" : {
+      "title" : "Field Values JSON",
+      "description" : "JSON with field values: Name, CloseDate, StageName, AccountId",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : true
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

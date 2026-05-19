@@ -1,0 +1,37 @@
+{
+  "packageDirectories": [
+    {
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT",
+      "path": "force-app",
+      "default": true,
+      "package": "Agentforce Opportunity Manager",
+      "versionDescription": "Global subagent for multi-team Opportunity creation with flexible field configurations",
+      "definitionFile": "config/project-scratch-def.json",
+      "packageMetadataAccess": [
+        "EinsteinGPTPromptTemplateManager"
+      ]
+    }
+  ],
+  "name": "Agentforce Opportunity Manager",
+  "namespace": "d26",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "66.0",
+  "packageAliases": {
+    "Agentforce Opportunity Manager": "0Hoao0000003TtVCAU",
+    "Agentforce Opportunity Manager@0.1.0-1": "04tao000005cV6LAAU",
+    "Agentforce Opportunity Manager@0.1.0-2": "04tao000005cV7xAAE",
+    "Agentforce Opportunity Manager@0.1.0-4": "04tao000005cVMTAA2",
+    "Agentforce Opportunity Manager@0.1.0-5": "04tao000005cVRJAA2",
+    "Agentforce Opportunity Manager@0.1.0-6": "04tao000005cVSvAAM",
+    "Agentforce Opportunity Manager@0.1.0-7": "04tao000005cVUXAA2",
+    "Agentforce Opportunity Manager@0.1.0-8": "04tao000005cVW9AAM",
+    "Agentforce Opportunity Manager@0.1.0-9": "04tao000005cVZNAA2",
+    "Agentforce Opportunity Manager@0.1.0-11": "04tao000005cVj3AAE",
+    "Agentforce Opportunity Manager@0.1.0-12": "04tao000005cVsjAAE",
+    "Agentforce Opportunity Manager@0.1.0-13": "04tao000005cVuLAAU",
+    "Agentforce Opportunity Manager@0.1.0-14": "04tao000005cVvxAAE",
+    "Agentforce Opportunity Manager@0.1.0-15": "04tao000005cVxZAAU",
+    "Agentforce Opportunity Manager@0.1.0-16": "04tao000005cVzBAAU"
+  }
+}

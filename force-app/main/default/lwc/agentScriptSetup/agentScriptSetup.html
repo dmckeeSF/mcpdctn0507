@@ -1,0 +1,47 @@
+<template>
+    <lightning-card title="Opportunity Agent Setup" icon-name="custom:custom19">
+        <div class="slds-p-around_medium">
+            <p class="slds-text-body_regular slds-m-bottom_medium">
+                Copy the Agent Script below and paste it into Agent Builder to create your Opportunity Management agent.
+            </p>
+
+            <lightning-tabset variant="scoped">
+                <lightning-tab label="Packaged Version (Namespaced)" value="packaged">
+                    <div class="slds-p-around_medium">
+                        <p class="slds-text-body_small slds-m-bottom_small">
+                            <strong>For packaging:</strong> Uses namespaced Apex actions (d26__). Will work after April 10, 2026 bug fix.
+                        </p>
+                        <lightning-button
+                            label="Copy Packaged Version"
+                            onclick={handleCopyPackaged}
+                            variant="brand"
+                            icon-name="utility:copy"
+                            class="slds-m-bottom_small">
+                        </lightning-button>
+                        <div class="code-container">
+                            <pre><code>{packagedScript}</code></pre>
+                        </div>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Demo Version (Local)" value="demo">
+                    <div class="slds-p-around_medium">
+                        <p class="slds-text-body_small slds-m-bottom_small">
+                            <strong>For immediate testing:</strong> Uses non-namespaced Apex actions. Works now but not packagable.
+                        </p>
+                        <lightning-button
+                            label="Copy Demo Version"
+                            onclick={handleCopyDemo}
+                            variant="brand"
+                            icon-name="utility:copy"
+                            class="slds-m-bottom_small">
+                        </lightning-button>
+                        <div class="code-container">
+                            <pre><code>{demoScript}</code></pre>
+                        </div>
+                    </div>
+                </lightning-tab>
+            </lightning-tabset>
+        </div>
+    </lightning-card>
+</template>

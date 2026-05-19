@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>Get_Opportunity_Fields</members>
+        <members>Create_Opportunity</members>
+        <name>GenAiFunction</name>
+    </types>
+    <types>
+        <members>Manage_Opportunities</members>
+        <name>GenAiPlugin</name>
+    </types>
+    <version>63.0</version>
+</Package>

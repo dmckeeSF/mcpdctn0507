@@ -1,0 +1,21 @@
+.code-container {
+    background-color: #f3f3f3;
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.code-container pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.code-container code {
+    color: #080707;
+}
