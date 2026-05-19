@@ -81,7 +81,10 @@ Output: {
 
 ### Step 1: Install the Package
 
-Install via the subscriber package version ID (e.g., `04tao000005cVMTAA2`)
+Install via the subscriber package version ID:
+```bash
+sf package install --package 04tao000005capBAAQ --wait 20
+```
 
 ### Step 2: Access Setup Page
 
