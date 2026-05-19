@@ -87,10 +87,10 @@ Output: {
 
 Install via the subscriber package version ID:
 ```bash
-sf package install --package 04tao000005cbGbAAI --wait 20
+sf package install --package 04tao000005cbLRAAY --wait 20
 ```
 
-**Latest Version:** 0.1.0.26 (04tao000005cbGbAAI)
+**Latest Version:** 0.1.0.28 (04tao000005cbLRAAY)
 
 ### Step 2: Assign Permission Set
 
