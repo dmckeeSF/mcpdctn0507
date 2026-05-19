@@ -1,0 +1,30 @@
+{
+  "unevaluatedProperties": false,
+  "properties": {
+    "fieldsJson": {
+      "title": "Fields (JSON)",
+      "description": "JSON array of available fields with metadata",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "isSuccess": {
+      "title": "Success",
+      "description": "Whether the operation was successful",
+      "lightning:type": "lightning__booleanType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "errorMessage": {
+      "title": "Error Message",
+      "description": "Error message if operation failed",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}

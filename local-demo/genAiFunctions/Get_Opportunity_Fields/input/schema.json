@@ -1,0 +1,13 @@
+{
+  "unevaluatedProperties": false,
+  "properties": {
+    "configurationName": {
+      "title": "Configuration Name",
+      "description": "Name of the Agentforce Opportunity Configuration (e.g., \"Default\", \"Sales_Team\"). If blank, uses \"Default\".",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}

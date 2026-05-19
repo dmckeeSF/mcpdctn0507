@@ -1,0 +1,21 @@
+{
+  "required": ["fieldValuesJson"],
+  "unevaluatedProperties": false,
+  "properties": {
+    "configurationName": {
+      "title": "Configuration Name",
+      "description": "Name of the Agentforce Opportunity Configuration (e.g., \"Default\", \"Sales_Team\"). If blank, uses \"Default\".",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    },
+    "fieldValuesJson": {
+      "title": "Field Values (JSON)",
+      "description": "JSON string containing field API names and values. Example: {\"Name\":\"Test Opportunity\",\"StageName\":\"Prospecting\",\"CloseDate\":\"2026-12-31\"}",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}

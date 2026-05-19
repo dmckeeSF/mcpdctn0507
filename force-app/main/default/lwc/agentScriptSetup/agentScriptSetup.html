@@ -1,5 +1,5 @@
 <template>
-    <lightning-card title="Opportunity Agent Setup" icon-name="custom:custom19">
+    <lightning-card icon-name="custom:custom19">
         <div class="slds-p-around_medium">
 
             <!-- Step 1: Required Permissions -->
@@ -122,16 +122,64 @@
 
                     <lightning-tab label="Demo Version (Local)" value="demo">
                         <div class="slds-p-around_medium">
-                            <p class="slds-text-body_small slds-m-bottom_small">
-                                <strong>For local development:</strong> Uses non-namespaced Apex actions.
+                            <p class="slds-text-body_small slds-m-bottom_medium">
+                                <strong>For local development and testing:</strong> Deploy non-namespaced components to your org without installing the managed package.
                             </p>
-                            <lightning-button
-                                label="Copy Demo Version"
-                                onclick={handleCopyDemo}
-                                variant="brand"
-                                icon-name="utility:copy"
-                                class="slds-m-bottom_small">
-                            </lightning-button>
+
+                            <div class="slds-box slds-box_x-small slds-m-bottom_medium">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">
+                                    <lightning-icon icon-name="utility:download" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                    Step 1: Download Local Metadata
+                                </h3>
+                                <p class="slds-text-body_small slds-m-bottom_x-small">
+                                    Clone or download the repository:
+                                </p>
+                                <div class="slds-m-left_medium slds-m-bottom_small">
+                                    <code class="slds-text-body_small">git clone https://github.com/dmckeeSF/mcpdctn0507.git</code>
+                                </div>
+                                <p class="slds-text-body_small">
+                                    Or download directly:
+                                    <a href="https://github.com/dmckeeSF/mcpdctn0507/tree/main/local-demo" target="_blank" rel="noopener noreferrer">
+                                        github.com/dmckeeSF/mcpdctn0507/tree/main/local-demo
+                                    </a>
+                                </p>
+                            </div>
+
+                            <div class="slds-box slds-box_x-small slds-m-bottom_medium">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">
+                                    <lightning-icon icon-name="utility:upload" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                    Step 2: Deploy Local Components
+                                </h3>
+                                <p class="slds-text-body_small slds-m-bottom_x-small">
+                                    Navigate to the project directory and deploy:
+                                </p>
+                                <div class="slds-m-left_medium slds-m-bottom_small">
+                                    <code class="slds-text-body_small">cd mcpdctn0507</code><br/>
+                                    <code class="slds-text-body_small">sf project deploy start --source-dir local-demo/ --target-org &lt;your-org&gt;</code>
+                                </div>
+                                <p class="slds-text-body_small slds-m-top_small">
+                                    <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                                    <em>This deploys: Local Apex actions, GenAiFunctions, Field Set, and Custom Metadata (all without namespace)</em>
+                                </p>
+                            </div>
+
+                            <div class="slds-box slds-box_x-small slds-m-bottom_medium">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">
+                                    <lightning-icon icon-name="utility:copy" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                    Step 3: Copy Local Agent Script
+                                </h3>
+                                <lightning-button
+                                    label="Copy Demo Version"
+                                    onclick={handleCopyDemo}
+                                    variant="brand"
+                                    icon-name="utility:copy"
+                                    class="slds-m-bottom_small">
+                                </lightning-button>
+                                <p class="slds-text-body_small slds-m-top_small">
+                                    <strong>Note:</strong> This version references non-namespaced actions (GetOpportunityFieldsActionLocal, CreateCustomObjectActionLocal)
+                                </p>
+                            </div>
+
                             <div class="code-container">
                                 <pre><code>{demoScript}</code></pre>
                             </div>
