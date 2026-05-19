@@ -3,7 +3,7 @@
 ## Package Information
 **Namespace:** `d26`  
 **Type:** Managed Package (2GP)  
-**Current Version:** 0.1.0-18 (04tao000005casPAAQ)
+**Current Version:** 0.1.0-19 (04tao000005cau1AAA)
 
 ---
 
@@ -186,7 +186,7 @@ local-demo/                            # NOT packaged
 ### 1. Install Package
 
 ```bash
-sf package install --package 04tao000005casPAAQ --wait 20
+sf package install --package 04tao000005cau1AAA --wait 20
 ```
 
 ### 2. Access Setup Page
@@ -220,7 +220,8 @@ sf agent activate --api-name <Developer_Name>
 
 | Version | Package ID | Date | Changes |
 |---------|-----------|------|---------|
-| 0.1.0-18 | 04tao000005casPAAQ | 2026-05-19 | Added GenAiFunction input/output schemas using Lightning standard types |
+| 0.1.0-19 | 04tao000005cau1AAA | 2026-05-19 | Removed GenAiPlannerBundle (runtime artifact) - CURRENT STABLE |
+| 0.1.0-18 | 04tao000005casPAAQ | 2026-05-19 | Added GenAiFunction input/output schemas (had GenAiPlannerBundle issue) |
 | 0.1.0-17 | 04tao000005capBAAQ | 2026-05-19 | Previous version (without GenAiFunctions) |
 | 0.1.0-16 | 04tao000005cVzBAAU | 2026-05-19 | Earlier version |
 

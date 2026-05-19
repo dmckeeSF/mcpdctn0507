@@ -87,7 +87,7 @@ Output: {
 
 Install via the subscriber package version ID:
 ```bash
-sf package install --package 04tao000005casPAAQ --wait 20
+sf package install --package 04tao000005cau1AAA --wait 20
 ```
 
 ### Step 2: Access Setup Page
