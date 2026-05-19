@@ -107,6 +107,15 @@ start_agent create_opportunity:
                 "errorMessage": string
                     description: "Error message if failed"
                     label: "Error Message"
+                "requiredFieldApiNames": list of string
+                    description: "List of API names for required fields"
+                    label: "Required Field API Names"
+                "recommendedFieldApiNames": list of string
+                    description: "List of API names for recommended fields"
+                    label: "Recommended Field API Names"
+                "fieldMetadataByApi": string
+                    description: "Map of apiName to field metadata object"
+                    label: "Field Metadata By API"
 
         Create_Opportunity:
             description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
@@ -247,6 +256,15 @@ start_agent create_opportunity:
                 "errorMessage": string
                     description: "Error message if failed"
                     label: "Error Message"
+                "requiredFieldApiNames": list of string
+                    description: "List of API names for required fields"
+                    label: "Required Field API Names"
+                "recommendedFieldApiNames": list of string
+                    description: "List of API names for recommended fields"
+                    label: "Recommended Field API Names"
+                "fieldMetadataByApi": string
+                    description: "Map of apiName to field metadata object"
+                    label: "Field Metadata By API"
 
         Create_Opportunity:
             description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
