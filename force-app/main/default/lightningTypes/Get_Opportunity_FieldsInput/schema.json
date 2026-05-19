@@ -1,5 +1,0 @@
-{
-  "title": "Get Opportunity Fields Request",
-  "description": "Get Opportunity Fields Input",
-  "lightning:type": "@apexClassType/c__GetOpportunityFieldsAction$GetFieldsInput"
-}

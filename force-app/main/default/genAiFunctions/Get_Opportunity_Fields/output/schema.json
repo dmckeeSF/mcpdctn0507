@@ -1,0 +1,22 @@
+{
+  "unevaluatedProperties": false,
+  "properties": {
+    "fields": {
+      "title": "Fields",
+      "description": "Available Opportunity fields",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "fieldMetadata": {
+      "title": "Field Metadata",
+      "description": "Metadata about available fields",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}

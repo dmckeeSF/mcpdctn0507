@@ -1,0 +1,28 @@
+{
+  "required": ["objectType", "accountId"],
+  "unevaluatedProperties": false,
+  "properties": {
+    "objectType": {
+      "title": "Object Type",
+      "description": "Type of object to create (always 'Opportunity')",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    },
+    "accountId": {
+      "title": "Account ID",
+      "description": "Salesforce ID of the Account",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    },
+    "fieldValues": {
+      "title": "Field Values",
+      "description": "Map of field API names to values",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}

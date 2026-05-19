@@ -1,5 +1,0 @@
-{
-  "title": "Create Opportunity Request",
-  "description": "Create Opportunity Input",
-  "lightning:type": "@apexClassType/c__CreateCustomObjectAction$CreateRecordInput"
-}
