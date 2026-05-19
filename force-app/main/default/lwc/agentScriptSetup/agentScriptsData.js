@@ -1,5 +1,23 @@
 const MANAGE_OPPORTUNITIES_AGENT = `system:
-    instructions: "You are an AI Agent that helps users create Opportunities in Salesforce."
+    instructions: |
+        You are an AI Agent that helps users create Opportunities in Salesforce.
+
+        Your job is to:
+        1. Understand what Opportunity fields are available and required by reading field metadata
+        2. Collect field values from the user through natural conversation
+        3. Build a JSON object with all field values (do NOT include OwnerId - it will default to the running user)
+        4. Confirm with the user before creating
+        5. Call the Create action and show the result
+
+        The Create action validates everything (required fields, date formats, picklist values, AccountId existence).
+        The OwnerId will automatically be set to the running user.
+        Do not do validation yourself - let the action handle it and show any errors to the user.
+
+        CRITICAL DISPLAY INSTRUCTIONS:
+        - When an Opportunity is created successfully, the action returns a recordLink output containing HTML.
+        - You MUST display this recordLink EXACTLY as provided - do not paraphrase or modify the HTML.
+        - Do NOT show the record ID. Always use the record name as the hyperlink display text.
+        - Simply include the recordLink HTML directly in your response to render the clickable link.
     messages:
         welcome: |
             Hi! I can help you create Opportunities. What would you like to do?
@@ -27,6 +45,8 @@ variables:
         description: "Account ID (18 characters)"
     created_oppty_id: mutable string = ""
         description: "ID of created Opportunity"
+    created_oppty_link: mutable string = ""
+        description: "Rich text hyperlink to created Opportunity"
     create_oppty_success: mutable boolean = False
         description: "Whether creation succeeded"
     create_oppty_error: mutable string = ""
@@ -85,13 +105,13 @@ start_agent create_opportunity:
                     with configurationName="Default"
                     with fieldValuesJson="{\"Name\":\"" + @variables.opp_name + "\",\"CloseDate\":\"" + @variables.close_date + "\",\"StageName\":\"" + @variables.stage_name + "\",\"AccountId\":\"" + @variables.account_id + "\"}"
                     set @variables.created_oppty_id = @outputs.recordId
+                    set @variables.created_oppty_link = @outputs.recordLink
                     set @variables.create_oppty_error = @outputs.errorMessage
 
                 # Handle create results immediately after action
                 if @outputs.recordId != "" and @outputs.errorMessage == "":
                     set @variables.create_oppty_success = True
-                    | Opportunity created successfully! ID: {!@outputs.recordId}
-                    | View it at: /lightning/r/Opportunity/{!@outputs.recordId}/view
+                    | Opportunity {!@variables.created_oppty_link} created successfully!
 
                 if @outputs.errorMessage != "":
                     set @variables.create_oppty_success = False
@@ -132,7 +152,7 @@ start_agent create_opportunity:
                     label: "Error Message"
 
         Create_Opportunity:
-            description: "Creates an Opportunity record with validated fields"
+            description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
             label: "Create Opportunity"
             source: "d26__Create_Opportunity"
             target: "apex://d26__CreateCustomObjectAction"
@@ -149,6 +169,12 @@ start_agent create_opportunity:
                 "recordId": string
                     description: "Created record ID"
                     label: "Record ID"
+                "recordName": string
+                    description: "Name of the created record"
+                    label: "Record Name"
+                "recordLink": string
+                    description: "Rich text HTML hyperlink to the created record - use this for display"
+                    label: "Record Link"
                 "errorMessage": string
                     description: "Error message if failed"
                     label: "Error Message"
