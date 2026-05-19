@@ -87,8 +87,10 @@ Output: {
 
 Install via the subscriber package version ID:
 ```bash
-sf package install --package 04tao000005cau1AAA --wait 20
+sf package install --package 04tao000005cb5JAAQ --wait 20
 ```
+
+**Latest Version:** 0.1.0.24 (04tao000005cb5JAAQ)
 
 ### Step 2: Access Setup Page
 
@@ -186,34 +188,23 @@ Fully functional Agent Script using local Apex actions. Copy-paste ready for qui
 
 **Status:** ✅ Works perfectly
 
-### Packaged Version (Work in Progress)
+### Packaged Version (Fully Functional)
 **File:** `force-app/main/default/lwc/agentScriptSetup/agentScriptsData.js` → `MANAGE_OPPORTUNITIES_AGENT`
 
 Agent Script targeting managed package actions with `d26__` namespace prefix.
 
 **Actions:**
-- `d26__GetOpportunityFieldsAction`
-- `d26__CreateCustomObjectAction`
+- `d26__GetOpportunityFieldsAction` (via GenAiFunction `d26__Get_Opportunity_Fields`)
+- `d26__CreateCustomObjectAction` (via GenAiFunction `d26__Create_Opportunity`)
 
-**Status:** ⚠️ Work in progress
+**Status:** ✅ Fully functional (v0.1.0.24)
 
-**Current Error:**
-```
-Action name not found: d26__GetOpportunityFieldsAction
-```
-
-**Root Cause:** The packaged agent references Apex actions with the `d26__` namespace prefix (managed package convention), but the managed package is not installed in the target org. The org only has local, non-namespaced versions of these actions.
-
-**Attempts Made:**
-1. Added `recordLink` and `recordName` outputs to packaged Apex action to match local version
-2. Removed `source` attribute from action definitions (only needed for Flow actions, not direct Apex references)
-3. Synced packaged Apex implementation with local version (Account resolution, validation logic)
-4. Attempted removing `d26__` prefix to point to local actions (reverted per user request)
-
-**Resolution Options:**
-- Install the `d26` managed package containing the namespaced actions
-- Point packaged agent to local actions by removing `d26__` prefix
-- Deploy namespaced versions of the actions to the target org
+**Key Implementation Details:**
+- Uses both `source` (GenAiFunction API name) and `target` (Apex invocation URI) fields
+- GenAiFunction output schemas must match Agent Script output declarations exactly
+- Agent Script type system is limited: string, number, boolean, object, currency, date, datetime, time, timestamp, id, integer, long
+- List types not supported - removed from schemas to align with Agent Script capabilities
+- When `source` field is present, strict validation enforces schema alignment
 
 ## License
 
