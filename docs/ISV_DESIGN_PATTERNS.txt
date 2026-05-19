@@ -21,56 +21,109 @@ Table of Contents
 Lightning Types define structured response schemas for Agentforce actions. They enable
 type-safe, validated data flow between actions and the LLM.
 
-Directory Structure:
--------------------
+Benefits:
+---------
+- Enhanced UI Customization: Full control over UI components when standard types don't
+  meet design needs. Create tailored components with specific styling and behavior.
+- Handling Complex Data Structures: Manage deeply nested objects, complex arrays, and
+  dynamic fields that change based on user input.
+
+CRITICAL: GenAiFunction Input/Output Schema Location
+----------------------------------------------------
+Input and output schemas are placed INSIDE the GenAiFunction directory, NOT in separate
+lightningTypes directories.
+
+Correct Directory Structure:
+---------------------------
+force-app/main/default/genAiFunctions/
+  └── Action_Name/
+      ├── Action_Name.genAiFunction-meta.xml
+      ├── input/
+      │   └── schema.json
+      └── output/
+          └── schema.json
+
+Example: For a GenAiFunction named "Create_Opportunity":
+
+force-app/main/default/genAiFunctions/
+  └── Create_Opportunity/
+      ├── Create_Opportunity.genAiFunction-meta.xml
+      ├── input/
+      │   └── schema.json
+      └── output/
+          └── schema.json
+
+Schema Format (Using Lightning Standard Types):
+-----------------------------------------------
+Input and output schemas use lightning__ standard types (NOT @apexClassType).
+
+Example input/schema.json:
+{
+  "required": ["fieldName"],
+  "unevaluatedProperties": false,
+  "properties": {
+    "fieldName": {
+      "title": "Field Name",
+      "description": "Description of the field",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}
+
+Example output/schema.json:
+{
+  "unevaluatedProperties": false,
+  "properties": {
+    "resultField": {
+      "title": "Result Field",
+      "description": "Description of the result",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}
+
+Standard Lightning Types Available:
+----------------------------------
+- lightning__textType (strings)
+- lightning__booleanType (true/false)
+- lightning__numberType (numeric values)
+- lightning__objectType (complex objects)
+- lightning__listType (arrays)
+
+Schema Annotations:
+------------------
+- lightning:isPII: Mark if field contains personally identifiable information
+- copilotAction:isDisplayable: Whether to show in UI
+- copilotAction:isUsedByPlanner: Whether LLM planner should use this field
+- copilotAction:isUserInput: Whether field comes from user input
+- copilotAction:useHydratedPrompt: Advanced prompt handling
+
+Custom Lightning Types (Advanced):
+----------------------------------
+For custom UI rendering, create a separate Lightning Web Component in lightningTypes/:
+
 force-app/main/default/lightningTypes/
-  ├── ActionNameRequest/
-  │   ├── schema.json
-  │   └── ActionNameRequest.lightningType-meta.xml
-  └── ActionNameResponse/
-      ├── schema.json
-      └── ActionNameResponse.lightningType-meta.xml
+  └── customResponseType/
+      ├── lightningDesktopGenAi/
+      │   └── renderer.json
+      └── schema.json
 
-Key Rules:
-----------
-- Lightning Type directory names MUST match GenAiFunction API names exactly
-  Example: For GenAiFunction "Create_Opportunity", use:
-    - Create_OpportunityRequest
-    - Create_OpportunityResponse
-
-- schema.json points to Apex inner classes using @apexClassType
-  Format: @apexClassType/<namespace>__<ClassName>$<InnerClass>
-
-  For managed packages, use YOUR namespace (e.g., d26__):
-    "lightning:type": "@apexClassType/d26__MyAction$Input"
-
-  For unpackaged/local, use c__ namespace:
-    "lightning:type": "@apexClassType/c__MyAction$Input"
-
-- Both Input and Output Lightning Types are REQUIRED for GenAiFunctions to package
-
-Example schema.json (Input):
-----------------------------
+Reference the custom type in output schema:
 {
-  "title": "Create Opportunity Request",
-  "description": "Input parameters for creating an Opportunity",
-  "lightning:type": "@apexClassType/d26__CreateOpportunityAction$CreateInput"
+  "items": {
+    "lightning:type": "c__customResponseType"
+  }
 }
 
-Example schema.json (Output):
------------------------------
-{
-  "title": "Create Opportunity Response",
-  "description": "Result of creating an Opportunity",
-  "lightning:type": "@apexClassType/d26__CreateOpportunityAction$CreateOutput"
-}
-
-Example lightningType-meta.xml:
--------------------------------
-<?xml version="1.0" encoding="UTF-8"?>
-<LightningType xmlns="http://soap.sforce.com/2006/04/metadata">
-    <masterLabel>Create Opportunity Request</masterLabel>
-</LightningType>
+Note: Custom Lightning Types require LWC components and are for advanced UI customization.
+Most use cases should use standard lightning__ types in GenAiFunction input/output directories.
 
 
 2. GenAiFunction & GenAiPlugin Metadata
@@ -82,7 +135,14 @@ GenAiFunction Structure:
 ------------------------
 force-app/main/default/genAiFunctions/
   └── Action_Name/
-      └── Action_Name.genAiFunction-meta.xml
+      ├── Action_Name.genAiFunction-meta.xml
+      ├── input/
+      │   └── schema.json
+      └── output/
+          └── schema.json
+
+IMPORTANT: Input and output schema.json files MUST be present inside the GenAiFunction
+directory for packaging to succeed. See Section 1 for schema.json format.
 
 Example GenAiFunction:
 ---------------------
@@ -126,24 +186,29 @@ Important Notes:
 3. Managed Package Requirements
 ================================
 
-Apex Invocable Methods for Agentforce MUST use @JsonAccess annotation on inner classes.
+Apex Invocable Methods for Agentforce in managed packages MUST:
+1. Use GLOBAL access modifier (not public)
+2. Use @JsonAccess annotation on ALL fields in inner classes
 
 Required Annotations:
 --------------------
 @InvocableMethod(label='Action Name' category='AI')
-public static List<OutputClass> methodName(List<InputClass> inputs) { ... }
+global static List<OutputClass> methodName(List<InputClass> inputs) { ... }
 
-public class InputClass {
+global class InputClass {
     @InvocableVariable(required=true)
     @JsonAccess(serializable='always' deserializable='always')
-    public String fieldName;
+    global String fieldName;
 }
 
-public class OutputClass {
+global class OutputClass {
     @InvocableVariable
     @JsonAccess(serializable='always' deserializable='always')
-    public String resultField;
+    global String resultField;
 }
+
+Note: For UNPACKAGED code, use 'public' access modifier. For MANAGED PACKAGES,
+use 'global' access modifier.
 
 Why @JsonAccess is Required:
 ----------------------------
@@ -291,25 +356,35 @@ Best Practices Summary
 ======================
 
 1. ALWAYS use @JsonAccess on ALL InvocableVariable fields in managed packages
-2. Lightning Type directory names MUST match GenAiFunction API names exactly
-3. Both Input and Output Lightning Types are REQUIRED for GenAiFunctions
-4. Use YOUR namespace (e.g., d26__) in Lightning Type schema.json for packaged Apex
+2. Place input/output schema.json files INSIDE GenAiFunction directories (not separate lightningTypes)
+3. Both input/ and output/ subdirectories with schema.json are REQUIRED for GenAiFunctions
+4. Use lightning__ standard types in schema.json (lightning__textType, lightning__booleanType, etc.)
 5. GenAiFunction invocationTarget uses namespace prefix, GenAiPlugin references use API names
 6. Distribute AgentScript separately - it cannot be packaged
 7. Enable packageMetadataAccess for PromptTemplate in sfdx-project.json
 8. Service agents need Einstein Agent User, employee agents do not
 9. Test in scratch orgs with EinsteinGPT, EnableAIGenerative, and SalesforceAgent features
+10. Custom Lightning Types (separate LWC components) are only needed for advanced UI customization
 
 Troubleshooting Common Errors
 ==============================
 
 Error: "Input LightningTypeBundle schema not found"
 --------------------------------------------------
-Cause: Missing Input Lightning Type or directory name mismatch
+Cause: Missing input/schema.json or output/schema.json inside GenAiFunction directory
 Fix:
-  1. Ensure Lightning Type directory matches GenAiFunction API name exactly
-  2. Create both Request and Response Lightning Types
-  3. Verify schema.json points to correct Apex inner class
+  1. Create input/ and output/ subdirectories inside your GenAiFunction directory
+  2. Add schema.json to both input/ and output/ directories
+  3. Use lightning__ standard types in schema.json, not @apexClassType
+
+Structure should be:
+  genAiFunctions/
+    └── Your_Function_Name/
+        ├── Your_Function_Name.genAiFunction-meta.xml
+        ├── input/
+        │   └── schema.json
+        └── output/
+            └── schema.json
 
 Error: "Please replace organisation's namespace 'd26' with default namespace 'c'"
 ---------------------------------------------------------------------------------
@@ -334,6 +409,10 @@ Official Salesforce Documentation:
 - Lightning Types: https://developer.salesforce.com/docs/platform/lwc/guide/reference-lightning-types.html
 - GenAiFunction: https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_genaifunction.htm
 - Agent Development: https://developer.salesforce.com/docs/einstein/genai/guide/agents.html
+- Invocable Methods: https://developer.salesforce.com/docs/einstein/genai/guide/agent-invocablemethod.html
 - Models API: https://developer.salesforce.com/docs/einstein/genai/guide/models-api.html
+
+Reference Repositories:
+- Package-Visualizer (Ronit): https://github.com/ronitnuguru/Package-Visualizer---Unlocked-Package-Extension
 
 Agentforce ISV Trailhead: https://trailhead.salesforce.com/content/learn/modules/agentforce-for-isvs
