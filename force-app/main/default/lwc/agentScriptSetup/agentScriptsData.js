@@ -171,11 +171,7 @@ const DEMO_MANAGE_OPPORTUNITIES_AGENT = `system:
         The OwnerId will automatically be set to the running user.
         Do not do validation yourself - let the action handle it and show any errors to the user.
 
-        CRITICAL DISPLAY INSTRUCTIONS:
-        - When an Opportunity is created successfully, the action returns a recordLink output containing HTML.
-        - You MUST display this recordLink EXACTLY as provided - do not paraphrase or modify the HTML.
-        - Do NOT show the record ID. Always use the record name as the hyperlink display text.
-        - Simply include the recordLink HTML directly in your response to render the clickable link.
+        CRITICAL: When you receive HTML markup in your instructions (like <strong><a href="...">text</a></strong>), you MUST output it EXACTLY as provided. Do NOT paraphrase, summarize, or modify the HTML in any way. Copy it verbatim into your response.
     messages:
         welcome: |
             Hi! I can help you create Opportunities. What would you like to do?
@@ -244,9 +240,9 @@ start_agent create_opportunity:
                 | Error creating Opportunity: {!@variables.create_error}
                 | Please provide corrected values.
 
-            # Guard 4: If created successfully (no error and has ID), show success
+            # Guard 4: If created successfully (no error and has ID), show success with clickable link
             if @variables.create_error == "" and @variables.created_oppty_id != "":
-                | Opportunity {!@variables.created_oppty_link} created successfully!
+                | {!@variables.created_oppty_link}
 
         actions:
             set_vars: @utils.setVariables
