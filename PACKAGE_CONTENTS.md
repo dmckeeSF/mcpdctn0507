@@ -3,7 +3,7 @@
 ## Package Information
 **Namespace:** `d26`  
 **Type:** Managed Package (2GP)  
-**Current Version:** 0.1.0-17 (04tao000005capBAAQ)
+**Current Version:** 0.1.0-18 (04tao000005casPAAQ)
 
 ---
 
@@ -41,19 +41,19 @@
   - Required: Name, StageName, CloseDate, AccountId
   - Optional: OwnerId, Amount, Description, Type, LeadSource, NextStep
 
-### 🤖 GenAiFunctions
+### 🤖 GenAiFunctions (with Input/Output Schemas)
 
 **Agent Actions:**
-- `Create_Opportunity` - References `d26__CreateCustomObjectAction`
-- `Get_Opportunity_Fields` - References `d26__GetOpportunityFieldsAction`
+- `Create_Opportunity/` - GenAiFunction wrapping `d26__CreateCustomObjectAction`
+  - `Create_Opportunity.genAiFunction-meta.xml`
+  - `input/schema.json` - Input parameters schema using lightning__textType
+  - `output/schema.json` - Output response schema
+- `Get_Opportunity_Fields/` - GenAiFunction wrapping `d26__GetOpportunityFieldsAction`
+  - `Get_Opportunity_Fields.genAiFunction-meta.xml`
+  - `input/schema.json` - Input parameters schema
+  - `output/schema.json` - Output response schema
 
-### ⚡ Lightning Types
-
-**Custom Response Types:**
-- `createOpportunityResponse` - Output schema for `CreateCustomObjectAction$CreateRecordOutput`
-- `getOpportunityFieldsResponse` - Output schema for `GetOpportunityFieldsAction$GetFieldsOutput`
-
-These Lightning Types enable custom UI rendering for Agentforce responses.
+**Note:** Schemas use Lightning standard types (lightning__textType, lightning__booleanType, etc.) and are placed INSIDE GenAiFunction directories for proper package discovery.
 
 ### 🎨 Lightning Web Component
 
@@ -103,16 +103,19 @@ force-app/main/default/
 │   └── Opportunity/
 │       └── fieldSets/                 # 1 field set
 │           └── Agentforce_Create_Fields.fieldSet-meta.xml
-├── genAiFunctions/                    # 2 actions
+├── genAiFunctions/                    # 2 actions with schemas
 │   ├── Create_Opportunity/
-│   │   └── Create_Opportunity.genAiFunction-meta.xml
+│   │   ├── Create_Opportunity.genAiFunction-meta.xml
+│   │   ├── input/
+│   │   │   └── schema.json
+│   │   └── output/
+│   │       └── schema.json
 │   └── Get_Opportunity_Fields/
-│       └── Get_Opportunity_Fields.genAiFunction-meta.xml
-├── lightningTypes/                    # 2 response types
-│   ├── createOpportunityResponse/
-│   │   └── schema.json
-│   └── getOpportunityFieldsResponse/
-│       └── schema.json
+│       ├── Get_Opportunity_Fields.genAiFunction-meta.xml
+│       ├── input/
+│       │   └── schema.json
+│       └── output/
+│           └── schema.json
 ├── lwc/                               # 3 files
 │   └── agentScriptSetup/
 │       ├── agentScriptSetup.html
@@ -183,7 +186,7 @@ local-demo/                            # NOT packaged
 ### 1. Install Package
 
 ```bash
-sf package install --package 04tao000005cVzBAAU --wait 20
+sf package install --package 04tao000005casPAAQ --wait 20
 ```
 
 ### 2. Access Setup Page
@@ -217,8 +220,9 @@ sf agent activate --api-name <Developer_Name>
 
 | Version | Package ID | Date | Changes |
 |---------|-----------|------|---------|
-| 0.1.0-16 | 04tao000005cVzBAAU | 2026-05-19 | Current version |
-| 0.1.0-15 | 04tao000005cVxZAAU | 2026-05-18 | Previous version |
+| 0.1.0-18 | 04tao000005casPAAQ | 2026-05-19 | Added GenAiFunction input/output schemas using Lightning standard types |
+| 0.1.0-17 | 04tao000005capBAAQ | 2026-05-19 | Previous version (without GenAiFunctions) |
+| 0.1.0-16 | 04tao000005cVzBAAU | 2026-05-19 | Earlier version |
 
 ---
 
