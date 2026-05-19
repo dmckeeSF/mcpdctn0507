@@ -3,7 +3,7 @@
 ## Package Information
 **Namespace:** `d26`  
 **Type:** Managed Package (2GP)  
-**Current Version:** 0.1.0-16 (04tao000005cVzBAAU)
+**Current Version:** 0.1.0-17 (04tao000005capBAAQ)
 
 ---
 
@@ -40,6 +40,20 @@
 - `d26__Agentforce_Create_Fields` - Default field set
   - Required: Name, StageName, CloseDate, AccountId
   - Optional: OwnerId, Amount, Description, Type, LeadSource, NextStep
+
+### 🤖 GenAiFunctions
+
+**Agent Actions:**
+- `Create_Opportunity` - References `d26__CreateCustomObjectAction`
+- `Get_Opportunity_Fields` - References `d26__GetOpportunityFieldsAction`
+
+### ⚡ Lightning Types
+
+**Custom Response Types:**
+- `createOpportunityResponse` - Output schema for `CreateCustomObjectAction$CreateRecordOutput`
+- `getOpportunityFieldsResponse` - Output schema for `GetOpportunityFieldsAction$GetFieldsOutput`
+
+These Lightning Types enable custom UI rendering for Agentforce responses.
 
 ### 🎨 Lightning Web Component
 
@@ -89,6 +103,16 @@ force-app/main/default/
 │   └── Opportunity/
 │       └── fieldSets/                 # 1 field set
 │           └── Agentforce_Create_Fields.fieldSet-meta.xml
+├── genAiFunctions/                    # 2 actions
+│   ├── Create_Opportunity/
+│   │   └── Create_Opportunity.genAiFunction-meta.xml
+│   └── Get_Opportunity_Fields/
+│       └── Get_Opportunity_Fields.genAiFunction-meta.xml
+├── lightningTypes/                    # 2 response types
+│   ├── createOpportunityResponse/
+│   │   └── schema.json
+│   └── getOpportunityFieldsResponse/
+│       └── schema.json
 ├── lwc/                               # 3 files
 │   └── agentScriptSetup/
 │       ├── agentScriptSetup.html
@@ -102,6 +126,9 @@ force-app/main/default/
 local-demo/                            # NOT packaged
 ├── CreateCustomObjectActionLocal.cls
 ├── GetOpportunityFieldsActionLocal.cls
+├── genAiFunctions/
+│   ├── Create_Opportunity/           # References Local actions
+│   └── Get_Opportunity_Fields/
 └── (meta.xml files)
 ```
 
