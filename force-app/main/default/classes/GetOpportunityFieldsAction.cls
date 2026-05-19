@@ -104,8 +104,12 @@ global with sharing class GetOpportunityFieldsAction {
                 throw new IllegalArgumentException('Configuration "' + configName + '" has no Field Set specified');
             }
 
-            // Get Field Set
+            // Get Field Set (handle both namespaced and non-namespaced)
             Schema.FieldSet fieldSet = Schema.SObjectType.Opportunity.fieldSets.getMap().get(fieldSetName);
+            if (fieldSet == null) {
+                // Try with d26 namespace prefix
+                fieldSet = Schema.SObjectType.Opportunity.fieldSets.getMap().get('d26__' + fieldSetName);
+            }
             if (fieldSet == null) {
                 throw new IllegalArgumentException('Field Set "' + fieldSetName + '" not found on Opportunity object');
             }

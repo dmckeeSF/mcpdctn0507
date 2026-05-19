@@ -1,80 +1,71 @@
-# ISV Package Contents - Ready for Distribution
+# Package Contents - Agentforce Opportunity Manager
 
-## Package: Agentforce Opportunity Manager
-**Namespace:** `FGBTNS01`  
+## Package Information
+**Namespace:** `d26`  
 **Type:** Managed Package (2GP)  
-**Version:** 1.0.0
+**Current Version:** 0.1.0-16 (04tao000005cVzBAAU)
 
 ---
 
-## What's Included (Managed & Protected)
+## What's Included in Package
 
-### 📦 Apex Classes (4 files)
-```
-✅ FGBTNS01__GetOpportunityFieldsAction.cls
-   - Invocable method for retrieving field metadata from Field Sets
-   - Returns: Field labels, types, required status, picklist values
-   
-✅ FGBTNS01__GetOpportunityFieldsActionTest.cls
-   - 100% test coverage
-   
-✅ FGBTNS01__CreateCustomObjectAction.cls
-   - Invocable method for creating Opportunities
-   - Dynamic field mapping from JSON
-   
-✅ FGBTNS01__CreateCustomObjectActionTest.cls
-   - 100% test coverage
-```
+### 📦 Apex Classes (6 files)
 
-### 🗂️ Custom Metadata Type (3 files)
-```
-✅ FGBTNS01__Agentforce_Opp_Config__mdt
-   - Label (User-friendly name)
-   - Field_Set_Name__c (References Field Set)
-   - Description__c (Configuration purpose)
-   
-✅ Default configuration record included
-```
+**Invocable Actions:**
+- `d26__GetOpportunityFieldsAction.cls` - Returns field metadata from Field Sets
+- `d26__CreateCustomObjectAction.cls` - Creates Opportunities with validation
+  - Field Set validation
+  - Account resolution (ID or name search via SOSL)
+  - Type conversion (Date, Decimal, Boolean, etc.)
+  - Picklist validation
+  - Rich text HTML link output
 
-### 📋 Field Sets (1 file)
-```
-✅ Opportunity.FGBTNS01__Agentforce_Create_Fields
-   - Default fields: Name, StageName, CloseDate, Amount, AccountId
-   - Customer can customize post-install
-```
+**Test Classes:**
+- `d26__GetOpportunityFieldsActionTest.cls` - 100% coverage
+- `d26__CreateCustomObjectActionTest.cls` - 100% coverage
 
-### 🎨 Lightning Web Component (3 files)
-```
-✅ agentScriptSetup (LWC)
-   - Setup page with embedded Agent Script
-   - Copy-to-clipboard functionality
-   - Step-by-step installation guide
-   - Accordion sections for each setup step
-```
+### 🗂️ Custom Metadata Type
 
-### 📄 Custom Tab & FlexiPage (2 files)
-```
-✅ Agentforce_Setup (Custom Tab)
-   - Easy access for customers
-   
-✅ Agentforce_Opportunity_Setup (FlexiPage)
-   - Contains the LWC component
-```
+**Type Definition:**
+- `d26__Agentforce_Opp_Config__mdt` - Configuration object
+  - `Field_Set_Name__c` - References Opportunity Field Set
+  - `Description__c` - Configuration purpose
+
+**Records:**
+- `Default` - Default configuration pointing to `Agentforce_Create_Fields`
+
+### 📋 Field Sets
+
+**Opportunity Field Sets:**
+- `d26__Agentforce_Create_Fields` - Default field set
+  - Required: Name, StageName, CloseDate, AccountId
+  - Optional: OwnerId, Amount, Description, Type, LeadSource, NextStep
+
+### 🎨 Lightning Web Component
+
+**agentScriptSetup (3 files):**
+- Setup page with embedded Agent Script examples
+- Copy-to-clipboard functionality for two agent variants:
+  - `MANAGE_OPPORTUNITIES_AGENT` - References `d26__` namespaced actions (for package)
+  - `LOCAL_MANAGE_OPPORTUNITIES_AGENT` - References local non-namespaced actions (for demo)
+- Step-by-step instructions
+
+### 📄 Custom Tab & FlexiPage
+
+- `d26__Opportunity_Agent_Setup` - Custom tab for setup page
+- `d26__Agentforce_Opportunity_Setup` - FlexiPage containing the LWC
 
 ---
 
-## What's NOT Included (By Design)
+## Not Included in Package (Local Demo Only)
 
-### ❌ Removed from Package:
-- `aiAuthoringBundles/` - Agent Script source (embedded in LWC instead)
-- `bots/` - Runtime artifacts (org-generated)
-- `genAiPlugins/` - Topics (org-generated)
-- `genAiPlannerBundles/` - Compiled agent (org-generated)
+These files are in `local-demo/` directory and are NOT packaged:
 
-**Why?** These metadata types are:
-1. Not yet supported in managed packages
-2. Org-generated at runtime (not source)
-3. Better distributed as documentation/text
+### Local Apex Actions (for quick testing)
+- `CreateCustomObjectActionLocal.cls` - Identical logic, no namespace
+- `GetOpportunityFieldsActionLocal.cls` - Identical logic, no namespace
+
+**Purpose:** Allow customers to quickly test the solution without installing the managed package.
 
 ---
 
@@ -82,105 +73,159 @@
 
 ```
 force-app/main/default/
-├── classes/                           # 8 files (4 classes + 4 test classes)
-│   ├── GetOpportunityFieldsAction.cls
-│   ├── GetOpportunityFieldsActionTest.cls
+├── classes/                           # 4 Apex files (namespaced)
 │   ├── CreateCustomObjectAction.cls
-│   └── CreateCustomObjectActionTest.cls
-├── customMetadata/                    # 1 file
+│   ├── CreateCustomObjectActionTest.cls
+│   ├── GetOpportunityFieldsAction.cls
+│   └── GetOpportunityFieldsActionTest.cls
+├── customMetadata/                    # 1 record
 │   └── Agentforce_Opp_Config.Default.md-meta.xml
 ├── objects/
-│   ├── Agentforce_Opp_Config__mdt/   # 3 files (object + 2 fields)
+│   ├── Agentforce_Opp_Config__mdt/   # CMT definition + fields
 │   │   ├── Agentforce_Opp_Config__mdt.object-meta.xml
 │   │   └── fields/
 │   │       ├── Description__c.field-meta.xml
 │   │       └── Field_Set_Name__c.field-meta.xml
 │   └── Opportunity/
-│       └── fieldSets/                 # 1 file
+│       └── fieldSets/                 # 1 field set
 │           └── Agentforce_Create_Fields.fieldSet-meta.xml
 ├── lwc/                               # 3 files
 │   └── agentScriptSetup/
 │       ├── agentScriptSetup.html
-│       ├── agentScriptSetup.js       # Contains Agent Script as string
+│       ├── agentScriptSetup.js       # Contains both Agent Scripts
 │       └── agentScriptSetup.js-meta.xml
-├── flexipages/                        # 1 file
+├── flexipages/                        # 1 FlexiPage
 │   └── Agentforce_Opportunity_Setup.flexipage-meta.xml
-└── tabs/                              # 1 file
-    └── Agentforce_Setup.tab-meta.xml
-```
+└── tabs/                              # 1 Custom Tab
+    └── Opportunity_Agent_Setup.tab-meta.xml
 
-**Total Files:** 18  
-**Package Size:** ~15KB (estimated)
+local-demo/                            # NOT packaged
+├── CreateCustomObjectActionLocal.cls
+├── GetOpportunityFieldsActionLocal.cls
+└── (meta.xml files)
+```
 
 ---
 
 ## Key Features
 
-### ✅ ISV-Ready
-- All Apex is **managed and protected**
-- Namespace prefix: `FGBTNS01__`
-- Ready for AppExchange submission
+### ✅ Account Resolution
+- Accepts Account ID (15 or 18 chars)
+- Accepts Account name (fuzzy SOSL search)
+- Returns helpful errors for multiple matches
 
-### ✅ Agent Script Distribution
-- Embedded in LWC as documentation
-- Copy-to-clipboard for easy setup
-- References namespaced Apex: `apex://FGBTNS01__GetOpportunityFieldsAction`
+### ✅ Rich Text Output
+- `recordLink` output contains HTML: `<strong><a href="...">Opportunity Name</a></strong>`
+- Agent displays clickable links directly in chat
 
-### ✅ Customer Customization
-- Can modify Field Sets post-install
-- Can create additional configurations
-- Can edit Agent Script in Agent Builder
-- Can republish with changes
+### ✅ Validation
+- Field Set enforcement (only allowed fields)
+- Required field checking
+- Date format validation (YYYY-MM-DD)
+- Picklist value validation
+- Reference field validation
 
-### ✅ Multi-Team Support
-- Hybrid Custom Metadata + Field Set architecture
-- Customers can create: Sales_Team, Partner_Team configs
-- Each points to different Field Sets
+### ✅ Type Conversion
+- Automatic conversion: String, Date, Decimal, Boolean, Integer, Currency, Percent, DateTime
+
+### ✅ Multi-Configuration Support
+- Custom Metadata allows multiple configurations
+- Each configuration points to different Field Set
+- Example: Sales_Team, Partner_Team configs
 
 ---
 
-## Installation URL Pattern
+## What's NOT Packaged (By Design)
 
-Once published:
+### ❌ Agent Metadata
+- `bots/` - Runtime artifacts (org-generated)
+- `aiAuthoringBundles/` - Agent Script source (embedded in LWC as text)
+- `genAiPlugins/` - Topics (org-generated)
+- `genAiPlannerBundles/` - Compiled agent (org-generated)
+
+**Why?** Agent metadata is org-specific and generated at runtime. Agent Script is distributed as copy-paste text in the setup LWC.
+
+### ❌ Permission Sets
+- Removed system permission sets (`sfdcInternalInt__*`)
+- Removed agent-specific permission sets (reference non-existent bots)
+
+---
+
+## Installation & Setup
+
+### 1. Install Package
+
+```bash
+sf package install --package 04tao000005cVzBAAU --wait 20
 ```
-https://login.salesforce.com/packaging/installPackage.apexp?p0=04t...
+
+### 2. Access Setup Page
+
+Navigate to **Opportunity Agent Setup** tab.
+
+### 3. Copy Agent Script
+
+- Click "Copy Packaged Agent Script" button
+- Paste into Agent Builder (Setup → Agent Builder → New Agent → Code Editor)
+
+### 4. Create Agent in Agent Builder
+
+The Agent Script references:
+- `apex://d26__GetOpportunityFieldsAction`
+- `apex://d26__CreateCustomObjectAction`
+
+These actions are automatically discovered from the managed package.
+
+### 5. Validate & Publish
+
+```bash
+sf agent validate authoring-bundle --api-name <Developer_Name>
+sf agent publish authoring-bundle --api-name <Developer_Name>
+sf agent activate --api-name <Developer_Name>
 ```
 
-Replace `04t...` with your package version ID.
+---
+
+## Version History
+
+| Version | Package ID | Date | Changes |
+|---------|-----------|------|---------|
+| 0.1.0-16 | 04tao000005cVzBAAU | 2026-05-19 | Current version |
+| 0.1.0-15 | 04tao000005cVxZAAU | 2026-05-18 | Previous version |
 
 ---
 
-## Next Steps
+## Development Workflow
 
-1. **Create Package Version:**
-   ```bash
-   sf package version create \
-     --package "Agentforce Opportunity Manager" \
-     --installation-key-bypass \
-     --wait 20
-   ```
+### Local Testing (No Package)
+1. Use `LOCAL_MANAGE_OPPORTUNITIES_AGENT` from setup page
+2. References `GetOpportunityFieldsActionLocal` and `CreateCustomObjectActionLocal`
+3. Files in `local-demo/` directory
+4. No namespace prefix
 
-2. **Promote to Released:**
-   ```bash
-   sf package version promote --package 04t...
-   ```
-
-3. **Test in Subscriber Org:**
-   - Install package
-   - Open "Agentforce Setup" tab
-   - Follow setup instructions
-   - Verify agent connects to managed Apex
-
-4. **Submit to AppExchange** (Optional)
-   - Complete security review
-   - Add listing details
-   - Submit for approval
+### Package Testing
+1. Create package version: `sf package version create`
+2. Install in subscriber org
+3. Use `MANAGE_OPPORTUNITIES_AGENT` from setup page
+4. References `d26__GetOpportunityFieldsAction` and `d26__CreateCustomObjectAction`
 
 ---
 
-## Support & Documentation
+## Known Issues
 
-- **Setup Guide:** See "Agentforce Setup" tab after install
-- **Technical Docs:** `PACKAGING.md`
-- **README:** `README.md`
+### Packaged Agent Error
+**Error:** `Action name not found: d26__GetOpportunityFieldsAction`
+
+**Root Cause:** Packaged Agent Script references `d26__` namespaced actions, but managed package is not installed in target org.
+
+**Resolution:**
+- Install managed package, OR
+- Use `LOCAL_MANAGE_OPPORTUNITIES_AGENT` variant (no namespace)
+
+---
+
+## Support
+
+- **Technical Docs:** See README.md
+- **Agent Script Reference:** See setup page in Opportunity Agent Setup tab
 - **License:** MIT
