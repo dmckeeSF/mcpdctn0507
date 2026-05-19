@@ -1,0 +1,339 @@
+Next-Gen ISV Design & Distribution Patterns
+============================================
+
+This reference covers Agentforce ISV development patterns, focusing on Lightning Types,
+GenAiFunction/GenAiPlugin metadata, managed packaging, and distribution strategies.
+
+Table of Contents
+-----------------
+1. Lightning Types for Custom Responses
+2. GenAiFunction & GenAiPlugin Metadata
+3. Managed Package Requirements
+4. AgentScript Distribution (Not Packageable)
+5. Scratch Org Setup for Agentforce
+6. 2GP vs 1GP Metadata Coverage
+7. Prompt Templates & Models API
+
+
+1. Lightning Types for Custom Responses
+========================================
+
+Lightning Types define structured response schemas for Agentforce actions. They enable
+type-safe, validated data flow between actions and the LLM.
+
+Directory Structure:
+-------------------
+force-app/main/default/lightningTypes/
+  ├── ActionNameRequest/
+  │   ├── schema.json
+  │   └── ActionNameRequest.lightningType-meta.xml
+  └── ActionNameResponse/
+      ├── schema.json
+      └── ActionNameResponse.lightningType-meta.xml
+
+Key Rules:
+----------
+- Lightning Type directory names MUST match GenAiFunction API names exactly
+  Example: For GenAiFunction "Create_Opportunity", use:
+    - Create_OpportunityRequest
+    - Create_OpportunityResponse
+
+- schema.json points to Apex inner classes using @apexClassType
+  Format: @apexClassType/<namespace>__<ClassName>$<InnerClass>
+
+  For managed packages, use YOUR namespace (e.g., d26__):
+    "lightning:type": "@apexClassType/d26__MyAction$Input"
+
+  For unpackaged/local, use c__ namespace:
+    "lightning:type": "@apexClassType/c__MyAction$Input"
+
+- Both Input and Output Lightning Types are REQUIRED for GenAiFunctions to package
+
+Example schema.json (Input):
+----------------------------
+{
+  "title": "Create Opportunity Request",
+  "description": "Input parameters for creating an Opportunity",
+  "lightning:type": "@apexClassType/d26__CreateOpportunityAction$CreateInput"
+}
+
+Example schema.json (Output):
+-----------------------------
+{
+  "title": "Create Opportunity Response",
+  "description": "Result of creating an Opportunity",
+  "lightning:type": "@apexClassType/d26__CreateOpportunityAction$CreateOutput"
+}
+
+Example lightningType-meta.xml:
+-------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Create Opportunity Request</masterLabel>
+</LightningType>
+
+
+2. GenAiFunction & GenAiPlugin Metadata
+========================================
+
+GenAiFunction and GenAiPlugin are PACKAGEABLE in 2GP (as of Winter '25).
+
+GenAiFunction Structure:
+------------------------
+force-app/main/default/genAiFunctions/
+  └── Action_Name/
+      └── Action_Name.genAiFunction-meta.xml
+
+Example GenAiFunction:
+---------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiFunction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Creates an Opportunity with validated fields</description>
+    <invocationTarget>d26__CreateOpportunityAction</invocationTarget>
+    <invocationTargetType>apex</invocationTargetType>
+    <isConfirmationRequired>false</isConfirmationRequired>
+    <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+    <masterLabel>Create Opportunity</masterLabel>
+    <progressIndicatorMessage>Creating Opportunity...</progressIndicatorMessage>
+</GenAiFunction>
+
+GenAiPlugin Structure:
+---------------------
+force-app/main/default/genAiPlugins/
+  └── Plugin_Name/
+      └── Plugin_Name.genAiPlugin-meta.xml
+
+Example GenAiPlugin:
+-------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPlugin xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Opportunity management actions for Agentforce</description>
+    <genAiFunctions>
+        <genAiFunctionName>Create_Opportunity</genAiFunctionName>
+        <genAiFunctionName>Get_Opportunity_Fields</genAiFunctionName>
+    </genAiFunctions>
+    <masterLabel>Opportunity Manager Plugin</masterLabel>
+</GenAiPlugin>
+
+Important Notes:
+---------------
+- GenAiFunction references Apex class using NAMESPACE prefix in managed packages
+  Example: d26__CreateOpportunityAction (not c__)
+- GenAiPlugin references GenAiFunction by API name (no namespace)
+- Both are fully supported in 2GP packaging (Winter '25+)
+
+
+3. Managed Package Requirements
+================================
+
+Apex Invocable Methods for Agentforce MUST use @JsonAccess annotation on inner classes.
+
+Required Annotations:
+--------------------
+@InvocableMethod(label='Action Name' category='AI')
+public static List<OutputClass> methodName(List<InputClass> inputs) { ... }
+
+public class InputClass {
+    @InvocableVariable(required=true)
+    @JsonAccess(serializable='always' deserializable='always')
+    public String fieldName;
+}
+
+public class OutputClass {
+    @InvocableVariable
+    @JsonAccess(serializable='always' deserializable='always')
+    public String resultField;
+}
+
+Why @JsonAccess is Required:
+----------------------------
+- Managed packages obfuscate private inner classes
+- @JsonAccess ensures serialization/deserialization works across namespace boundaries
+- Without it, subscribers cannot invoke packaged actions from Agentforce
+- Apply to ALL fields in Input and Output classes
+
+Common Pitfall:
+--------------
+Forgetting @JsonAccess on List<SObject> fields or complex types. ALL invocable
+variables need it, regardless of type.
+
+
+4. AgentScript Distribution (Not Packageable)
+==============================================
+
+AgentScript (.agent files in AiAuthoringBundle) is NOT packageable in 2GP.
+
+Distribution Strategy:
+---------------------
+1. Package the backing logic (Apex classes, Flows, Lightning Types, GenAiFunctions)
+2. Distribute AgentScript source as plain text in a Lightning Web Component or
+   documentation artifact
+3. Subscribers manually create AiAuthoringBundle and paste the AgentScript
+
+Example Distribution Pattern:
+-----------------------------
+Create a custom LWC that displays the AgentScript source with a "Copy" button.
+Include instructions for creating the AiAuthoringBundle in the subscriber org.
+
+Alternative: Include AgentScript in GitHub repo or AppExchange listing instructions.
+
+Why Not Packageable:
+-------------------
+AiAuthoringBundle metadata type is not currently supported in 2GP package manifests.
+This may change in future releases.
+
+
+5. Scratch Org Setup for Agentforce
+====================================
+
+Scratch org definition file requirements for Agentforce development:
+
+Required Features:
+-----------------
+{
+  "features": [
+    "EinsteinGPT",
+    "EnableAIGenerative",
+    "SalesforceAgent"
+  ],
+  "settings": {
+    "aiSettings": {
+      "enableEinsteinGPT": true,
+      "enableAgentforce": true
+    }
+  }
+}
+
+Package Metadata Access:
+-----------------------
+Add to sfdx-project.json packageDirectories:
+
+"packageMetadataAccess": [
+  "EinsteinGPTPromptTemplateManager"
+]
+
+This enables PromptTemplate metadata deployment without manual setup steps.
+
+Einstein Agent User:
+-------------------
+Service agents require an Einstein Agent User (Agentforce Service Agent license).
+Employee agents do NOT require this.
+
+Creation:
+- UI: Setup → Users → New User → Select "Agentforce Service Agent" license
+- CLI: See Agent User Setup reference for permission set assignments
+
+
+6. 2GP vs 1GP Metadata Coverage
+================================
+
+Agentforce Metadata Support:
+----------------------------
+✅ Packageable in 2GP:
+  - GenAiFunction
+  - GenAiPlugin
+  - LightningType
+  - PromptTemplate (with packageMetadataAccess)
+  - Apex (with @JsonAccess)
+  - Flow
+  - CustomObject
+
+❌ NOT Packageable in 2GP:
+  - AiAuthoringBundle (.agent files)
+  - GenAiPlanner
+  - Some Einstein settings
+
+Migration from 1GP:
+------------------
+If migrating from 1GP to 2GP, audit your package contents for unsupported
+metadata types. AgentScript must be distributed separately.
+
+
+7. Prompt Templates & Models API
+=================================
+
+Prompt Templates can be packaged and reference Models API for LLM inference.
+
+Template Structure:
+------------------
+force-app/main/default/promptTemplates/
+  └── TemplateName/
+      ├── TemplateName.pt-meta.xml
+      └── template.txt
+
+Example pt-meta.xml:
+-------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<PromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Opportunity Summary</masterLabel>
+    <description>Summarizes Opportunity data</description>
+    <type>einstein_gpt__flex</type>
+    <templateDataProviderType>apex</templateDataProviderType>
+    <templateDataProviderClass>d26__OpportunityDataProvider</templateDataProviderClass>
+</PromptTemplate>
+
+Models API Integration:
+----------------------
+Use ConnectApi.EinsteinLLM.generateMessagesWithTemplateId() to invoke prompt
+templates from Apex. This allows dynamic LLM calls within action logic.
+
+Example:
+--------
+ConnectApi.EinsteinLLM.GenerationInput input = new ConnectApi.EinsteinLLM.GenerationInput();
+input.templateId = 'PromptTemplateId';
+input.inputVariables = new Map<String, Object>{'recordId' => oppId};
+
+ConnectApi.EinsteinLLM.GenerationOutput output =
+    ConnectApi.EinsteinLLM.generateMessagesWithTemplateId(input);
+
+
+Best Practices Summary
+======================
+
+1. ALWAYS use @JsonAccess on ALL InvocableVariable fields in managed packages
+2. Lightning Type directory names MUST match GenAiFunction API names exactly
+3. Both Input and Output Lightning Types are REQUIRED for GenAiFunctions
+4. Use YOUR namespace (e.g., d26__) in Lightning Type schema.json for packaged Apex
+5. GenAiFunction invocationTarget uses namespace prefix, GenAiPlugin references use API names
+6. Distribute AgentScript separately - it cannot be packaged
+7. Enable packageMetadataAccess for PromptTemplate in sfdx-project.json
+8. Service agents need Einstein Agent User, employee agents do not
+9. Test in scratch orgs with EinsteinGPT, EnableAIGenerative, and SalesforceAgent features
+
+Troubleshooting Common Errors
+==============================
+
+Error: "Input LightningTypeBundle schema not found"
+--------------------------------------------------
+Cause: Missing Input Lightning Type or directory name mismatch
+Fix:
+  1. Ensure Lightning Type directory matches GenAiFunction API name exactly
+  2. Create both Request and Response Lightning Types
+  3. Verify schema.json points to correct Apex inner class
+
+Error: "Please replace organisation's namespace 'd26' with default namespace 'c'"
+---------------------------------------------------------------------------------
+Cause: Using managed namespace in unpackaged context
+Fix: Use c__ for local development, d26__ (your namespace) for packaged metadata
+
+Error: "Cannot deserialize instance of MyClass$Input"
+-----------------------------------------------------
+Cause: Missing @JsonAccess annotation on inner class
+Fix: Add @JsonAccess(serializable='always' deserializable='always') to ALL fields
+
+Error: "Einstein Agent User not found"
+--------------------------------------
+Cause: Service agent requires special user license
+Fix: Create user with "Agentforce Service Agent" license (not needed for employee agents)
+
+
+Reference Links
+===============
+
+Official Salesforce Documentation:
+- Lightning Types: https://developer.salesforce.com/docs/platform/lwc/guide/reference-lightning-types.html
+- GenAiFunction: https://developer.salesforce.com/docs/atlas.en-us.api_meta.meta/api_meta/meta_genaifunction.htm
+- Agent Development: https://developer.salesforce.com/docs/einstein/genai/guide/agents.html
+- Models API: https://developer.salesforce.com/docs/einstein/genai/guide/models-api.html
+
+Agentforce ISV Trailhead: https://trailhead.salesforce.com/content/learn/modules/agentforce-for-isvs
