@@ -27,38 +27,28 @@ config:
     developer_name: "Manage_Opportunities_Agent"
     agent_label: "Manage Opportunities"
     agent_type: "AgentforceEmployeeAgent"
-    description: "Agent for Opportunity creation with guided field collection"
+    description: "Fully generic agent for Opportunity creation - all validation in Apex"
 
 language:
     default_locale: "en_US"
 
 variables:
-    opp_fields_json: mutable object = {}
-        description: "Field metadata from GetOpportunityFieldsAction"
-    opp_name: mutable string = ""
-        description: "Opportunity Name"
-    close_date: mutable string = ""
-        description: "Close Date in YYYY-MM-DD format"
-    stage_name: mutable string = ""
-        description: "Opportunity Stage"
-    account_id: mutable string = ""
-        description: "Account ID (18 characters)"
+    opp_fields_json: mutable string = ""
+        description: "Field metadata JSON from GetOpportunityFieldsAction"
+    field_values_json: mutable string = "{}"
+        description: "User-provided field values as JSON"
     created_oppty_id: mutable string = ""
         description: "ID of created Opportunity"
     created_oppty_link: mutable string = ""
         description: "Rich text hyperlink to created Opportunity"
-    create_oppty_success: mutable boolean = False
-        description: "Whether creation succeeded"
-    create_oppty_error: mutable string = ""
+    create_error: mutable string = ""
         description: "Error from create action"
-    last_error: mutable string = ""
-        description: "Last validation or action error"
     user_confirm_create: mutable boolean = False
         description: "User confirmation to create"
 
 start_agent create_opportunity:
     label: "Create Opportunity"
-    description: "Guide user through creating an Opportunity"
+    description: "Guide user through creating an Opportunity with dynamic field collection"
 
     reasoning:
         instructions: ->
@@ -67,65 +57,32 @@ start_agent create_opportunity:
                 with configurationName="Default"
                 set @variables.opp_fields_json = @outputs.fieldsJson
 
-            # Reset error each turn unless explicitly set later
-            set @variables.last_error = ""
+            # Clear error message each turn
+            set @variables.create_error = ""
 
-            # Clear old errors when user confirms (fresh attempt)
-            if @variables.user_confirm_create == True:
-                set @variables.create_oppty_error = ""
-
-            # Reset success flag each turn unless already succeeded
-            if @variables.created_oppty_id == "":
-                set @variables.create_oppty_success = False
-
-            # Guard: Basic required field validation
-            if @variables.created_oppty_id == "" and (@variables.opp_name == "" or @variables.close_date == "" or @variables.stage_name == "" or @variables.account_id == ""):
-                set @variables.last_error = "Missing required fields: Name, Close Date (YYYY-MM-DD), Stage, and Account ID."
-                | Error: {!@variables.last_error}
-                | If available, show stage options from {!@variables.opp_fields_json}.
-                | Please provide corrected values.
-                set @variables.user_confirm_create = False
-
-            # Guard: Close date format validation
-            if @variables.created_oppty_id == "" and @variables.last_error == "" and @variables.close_date != "" and (@variables.close_date[4] != "-" or @variables.close_date[7] != "-"):
-                set @variables.last_error = "Close Date must be in YYYY-MM-DD format."
-                | Error: {!@variables.last_error}
-                | Please provide a valid date in YYYY-MM-DD format.
-                set @variables.user_confirm_create = False
-
-            # Guard: If validation passed but not yet confirmed, ask for confirmation
-            if @variables.created_oppty_id == "" and @variables.last_error == "" and @variables.user_confirm_create == False:
-                | Ready to create Opportunity with these details:
-                | Name={!@variables.opp_name}, CloseDate={!@variables.close_date}, Stage={!@variables.stage_name}, AccountId={!@variables.account_id}
-                | Confirm to create?
-
-            # Guard: If confirmed and validated, create the opportunity
-            if @variables.created_oppty_id == "" and @variables.last_error == "" and @variables.user_confirm_create == True:
+            # Guard 1: If confirmed and not yet created, create the opportunity
+            if @variables.user_confirm_create == True and @variables.created_oppty_id == "":
                 run @actions.Create_Opportunity
                     with configurationName="Default"
-                    with fieldValuesJson="{\"Name\":\"" + @variables.opp_name + "\",\"CloseDate\":\"" + @variables.close_date + "\",\"StageName\":\"" + @variables.stage_name + "\",\"AccountId\":\"" + @variables.account_id + "\"}"
+                    with fieldValuesJson=@variables.field_values_json
                     set @variables.created_oppty_id = @outputs.recordId
                     set @variables.created_oppty_link = @outputs.recordLink
-                    set @variables.create_oppty_error = @outputs.errorMessage
+                    set @variables.create_error = @outputs.errorMessage
 
-                # Handle create results immediately after action
-                if @outputs.recordId != "" and @outputs.errorMessage == "":
-                    set @variables.create_oppty_success = True
-                    | Opportunity {!@variables.created_oppty_link} created successfully!
+            # Guard 2: If create failed (has error), show error and reset confirmation
+            if @variables.create_error != "":
+                set @variables.user_confirm_create = False
+                | Error creating Opportunity: {!@variables.create_error}
+                | Please provide corrected values.
 
-                if @outputs.errorMessage != "":
-                    set @variables.create_oppty_success = False
-                    set @variables.user_confirm_create = False
-                    | Error creating Opportunity: {!@outputs.errorMessage}
-                    | Please correct the issue and try again.
+            # Guard 3: If created successfully (no error and has ID), show success
+            if @variables.create_error == "" and @variables.created_oppty_id != "":
+                | Opportunity {!@variables.created_oppty_link} created successfully!
 
         actions:
             set_vars: @utils.setVariables
-                description: "Set field values and confirmation flag"
-                with opp_name=...
-                with close_date=...
-                with stage_name=...
-                with account_id=...
+                description: "Set field values JSON and confirmation flag"
+                with field_values_json=...
                 with user_confirm_create=...
 
     actions:
