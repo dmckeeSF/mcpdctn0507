@@ -87,17 +87,17 @@ Output: {
 
 Install via the subscriber package version ID:
 ```bash
-sf package install --package 04tao000005cb5JAAQ --wait 20
+sf package install --package 04tao000005cbGbAAI --wait 20
 ```
 
-**Latest Version:** 0.1.0.24 (04tao000005cb5JAAQ)
+**Latest Version:** 0.1.0.26 (04tao000005cbGbAAI)
 
 ### Step 2: Assign Permission Set
 
-Assign the **Agentforce Opportunity Manager Access** permission set to users who need to configure agents:
+Assign the **d26__Agentforce Opportunity Manager Access** permission set to users who need to configure agents:
 
 ```bash
-sf org assign permset --name Agentforce_Opportunity_Manager_Access
+sf org assign permset --name d26__Agentforce_Opportunity_Manager_Access
 ```
 
 Or via Setup:
