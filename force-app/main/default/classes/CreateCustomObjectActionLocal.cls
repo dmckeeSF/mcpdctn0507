@@ -40,6 +40,9 @@ global with sharing class CreateCustomObjectActionLocal {
         @InvocableVariable(label='Record Name' description='Name of the created record')
         global String recordName;
 
+        @InvocableVariable(label='Record Link' description='Rich text hyperlink to the created record')
+        global String recordLink;
+
         @InvocableVariable(label='Success' description='Whether the record was created successfully')
         global Boolean isSuccess;
 
@@ -163,6 +166,7 @@ global with sharing class CreateCustomObjectActionLocal {
 
                 output.recordId = newOpp.Id;
                 output.recordName = newOpp.Name;
+                output.recordLink = '<strong><a href="/lightning/r/Opportunity/' + newOpp.Id + '/view">' + newOpp.Name + '</a></strong>';
                 output.isSuccess = true;
                 output.errorMessage = '';
 
