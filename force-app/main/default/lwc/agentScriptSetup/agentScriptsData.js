@@ -137,7 +137,7 @@ start_agent create_opportunity:
                     description: "Success flag"
                     label: "Success"`;
 
-const DEMO_MANAGE_OPPORTUNITIES_AGENT = `system:
+const LOCAL_MANAGE_OPPORTUNITIES_AGENT = `system:
     instructions: |
         You are an AI Agent that helps users create Opportunities in Salesforce.
 
@@ -273,4 +273,4 @@ start_agent create_opportunity:
                     description: "Success flag"
                     label: "Success"`;
 
-export { MANAGE_OPPORTUNITIES_AGENT, DEMO_MANAGE_OPPORTUNITIES_AGENT };
+export { MANAGE_OPPORTUNITIES_AGENT, LOCAL_MANAGE_OPPORTUNITIES_AGENT };

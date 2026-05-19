@@ -1,11 +1,11 @@
 import { LightningElement } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { MANAGE_OPPORTUNITIES_AGENT, DEMO_MANAGE_OPPORTUNITIES_AGENT } from './agentScriptsData';
+import { MANAGE_OPPORTUNITIES_AGENT, LOCAL_MANAGE_OPPORTUNITIES_AGENT } from './agentScriptsData';
 
 export default class AgentScriptSetup extends LightningElement {
 
     packagedScript = MANAGE_OPPORTUNITIES_AGENT;
-    demoScript = DEMO_MANAGE_OPPORTUNITIES_AGENT;
+    demoScript = LOCAL_MANAGE_OPPORTUNITIES_AGENT;
 
     handleCopyPackaged() {
         this.copyToClipboard(this.packagedScript, 'Packaged Agent Script');
