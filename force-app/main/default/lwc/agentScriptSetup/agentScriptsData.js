@@ -39,8 +39,6 @@ variables:
         description: "User-provided field values as JSON"
     created_oppty_id: mutable string = ""
         description: "ID of created Opportunity"
-    created_oppty_link: mutable string = ""
-        description: "Rich text hyperlink to created Opportunity"
     create_error: mutable string = ""
         description: "Error from create action"
     user_confirm_create: mutable boolean = False
@@ -66,7 +64,6 @@ start_agent create_opportunity:
                     with configurationName="Default"
                     with fieldValuesJson=@variables.field_values_json
                     set @variables.created_oppty_id = @outputs.recordId
-                    set @variables.created_oppty_link = @outputs.recordLink
                     set @variables.create_error = @outputs.errorMessage
 
             # Guard 2: If create failed (has error), show error and reset confirmation
@@ -77,7 +74,8 @@ start_agent create_opportunity:
 
             # Guard 3: If created successfully (no error and has ID), show success
             if @variables.create_error == "" and @variables.created_oppty_id != "":
-                | Opportunity {!@variables.created_oppty_link} created successfully!
+                | Opportunity created successfully! ID: {!@variables.created_oppty_id}
+                | View it at: /lightning/r/Opportunity/{!@variables.created_oppty_id}/view
 
         actions:
             set_vars: @utils.setVariables
@@ -108,7 +106,7 @@ start_agent create_opportunity:
                     label: "Error Message"
 
         Create_Opportunity:
-            description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
+            description: "Creates an Opportunity record with validated fields"
             label: "Create Opportunity"
             target: "apex://d26__CreateCustomObjectAction"
 
@@ -124,12 +122,6 @@ start_agent create_opportunity:
                 "recordId": string
                     description: "Created record ID"
                     label: "Record ID"
-                "recordName": string
-                    description: "Name of the created record"
-                    label: "Record Name"
-                "recordLink": string
-                    description: "Rich text HTML hyperlink to the created record - use this for display"
-                    label: "Record Link"
                 "errorMessage": string
                     description: "Error message if failed"
                     label: "Error Message"
