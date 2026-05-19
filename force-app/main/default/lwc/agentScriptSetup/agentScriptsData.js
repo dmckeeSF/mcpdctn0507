@@ -89,7 +89,6 @@ start_agent create_opportunity:
         Get_Opportunity_Fields:
             description: "Returns available Opportunity fields based on configuration"
             label: "Get Opportunity Fields"
-            source: "d26__Get_Opportunity_Fields"
             target: "apex://d26__GetOpportunityFieldsAction"
 
             inputs:
@@ -111,7 +110,6 @@ start_agent create_opportunity:
         Create_Opportunity:
             description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
             label: "Create Opportunity"
-            source: "d26__Create_Opportunity"
             target: "apex://d26__CreateCustomObjectAction"
 
             inputs:
