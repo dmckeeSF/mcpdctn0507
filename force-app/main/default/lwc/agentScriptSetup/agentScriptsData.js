@@ -201,8 +201,6 @@ variables:
         description: "Rich text hyperlink to created Opportunity"
     create_error: mutable string = ""
         description: "Error from create action"
-    user_confirm_create: mutable boolean = False
-        description: "User confirmation to create"
 
 start_agent create_opportunity:
     label: "Create Opportunity"
@@ -218,8 +216,9 @@ start_agent create_opportunity:
             # Clear error message each turn
             set @variables.create_error = ""
 
-            # Guard 1: If confirmed and not yet created, create the opportunity
-            if @variables.user_confirm_create == True and @variables.created_oppty_id == "":
+            # Guard 1: If not yet created and have field values, create the opportunity
+            # The require_user_confirmation flag on the action will handle Yes/No buttons
+            if @variables.created_oppty_id == "" and @variables.field_values_json != "{}":
                 run @actions.Create_Opportunity
                     with configurationName="Default"
                     with fieldValuesJson=@variables.field_values_json
@@ -227,9 +226,8 @@ start_agent create_opportunity:
                     set @variables.created_oppty_link = @outputs.recordLink
                     set @variables.create_error = @outputs.errorMessage
 
-            # Guard 2: If create failed (has error), show error and reset confirmation
+            # Guard 2: If create failed (has error), show error
             if @variables.create_error != "":
-                set @variables.user_confirm_create = False
                 | Error creating Opportunity: {!@variables.create_error}
                 | Please provide corrected values.
 
@@ -239,9 +237,8 @@ start_agent create_opportunity:
 
         actions:
             set_vars: @utils.setVariables
-                description: "Set field values JSON and confirmation flag"
+                description: "Set field values JSON"
                 with field_values_json=...
-                with user_confirm_create=...
 
     actions:
         Get_Opportunity_Fields:
@@ -269,6 +266,7 @@ start_agent create_opportunity:
             description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
             label: "Create Opportunity"
             target: "apex://CreateCustomObjectActionLocal"
+            require_user_confirmation: True
 
             inputs:
                 "configurationName": string
