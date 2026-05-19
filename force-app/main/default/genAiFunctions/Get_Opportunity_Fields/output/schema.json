@@ -24,36 +24,6 @@
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,
       "copilotAction:isUsedByPlanner": true
-    },
-    "requiredFieldApiNames": {
-      "title": "Required Field API Names",
-      "description": "List of API names for required fields",
-      "lightning:type": "lightning__listType",
-      "items": {
-        "lightning:type": "lightning__textType"
-      },
-      "lightning:isPII": false,
-      "copilotAction:isDisplayable": true,
-      "copilotAction:isUsedByPlanner": true
-    },
-    "recommendedFieldApiNames": {
-      "title": "Recommended Field API Names",
-      "description": "List of API names for recommended fields",
-      "lightning:type": "lightning__listType",
-      "items": {
-        "lightning:type": "lightning__textType"
-      },
-      "lightning:isPII": false,
-      "copilotAction:isDisplayable": true,
-      "copilotAction:isUsedByPlanner": true
-    },
-    "fieldMetadataByApi": {
-      "title": "Field Metadata By API",
-      "description": "Map of apiName to field metadata object",
-      "lightning:type": "lightning__textType",
-      "lightning:isPII": false,
-      "copilotAction:isDisplayable": true,
-      "copilotAction:isUsedByPlanner": true
     }
   },
   "lightning:type": "lightning__objectType"
