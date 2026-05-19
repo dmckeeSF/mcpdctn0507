@@ -1,17 +1,17 @@
 {
   "unevaluatedProperties": false,
   "properties": {
-    "success": {
-      "title": "Success",
-      "description": "Whether the operation succeeded",
-      "lightning:type": "lightning__booleanType",
+    "recordId": {
+      "title": "Record Id",
+      "description": "ID of the created record",
+      "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,
       "copilotAction:isUsedByPlanner": true
     },
-    "recordId": {
-      "title": "Record ID",
-      "description": "ID of the created Opportunity",
+    "recordName": {
+      "title": "Record Name",
+      "description": "Name of the created record",
       "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,
@@ -19,15 +19,23 @@
     },
     "recordLink": {
       "title": "Record Link",
-      "description": "Link to the created Opportunity",
+      "description": "Rich text hyperlink to the created record",
       "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,
       "copilotAction:isUsedByPlanner": false
     },
+    "isSuccess": {
+      "title": "Success",
+      "description": "Whether the record was created successfully",
+      "lightning:type": "lightning__booleanType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
     "errorMessage": {
       "title": "Error Message",
-      "description": "Error message if operation failed",
+      "description": "Error message if creation failed",
       "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,

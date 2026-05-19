@@ -1,17 +1,9 @@
 {
-  "required": ["objectType", "accountId"],
   "unevaluatedProperties": false,
   "properties": {
-    "objectType": {
-      "title": "Object Type",
-      "description": "Type of object to query (always 'Opportunity')",
-      "lightning:type": "lightning__textType",
-      "lightning:isPII": false,
-      "copilotAction:isUserInput": false
-    },
-    "accountId": {
-      "title": "Account ID",
-      "description": "Salesforce ID of the Account",
+    "configurationName": {
+      "title": "Configuration Name",
+      "description": "Name of the Agentforce Opportunity Configuration (e.g., \"Default\", \"Sales_Team\"). If blank, uses \"Default\".",
       "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isUserInput": false

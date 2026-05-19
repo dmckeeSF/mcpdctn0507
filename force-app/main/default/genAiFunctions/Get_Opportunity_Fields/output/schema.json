@@ -1,17 +1,55 @@
 {
   "unevaluatedProperties": false,
   "properties": {
-    "fields": {
-      "title": "Fields",
-      "description": "Available Opportunity fields",
+    "fieldsJson": {
+      "title": "Fields (JSON)",
+      "description": "JSON array of available fields with metadata",
       "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,
       "copilotAction:isUsedByPlanner": true
     },
-    "fieldMetadata": {
-      "title": "Field Metadata",
-      "description": "Metadata about available fields",
+    "isSuccess": {
+      "title": "Success",
+      "description": "Whether the operation was successful",
+      "lightning:type": "lightning__booleanType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "errorMessage": {
+      "title": "Error Message",
+      "description": "Error message if operation failed",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "requiredFieldApiNames": {
+      "title": "Required Field API Names",
+      "description": "List of API names for required fields",
+      "lightning:type": "lightning__listType",
+      "items": {
+        "lightning:type": "lightning__textType"
+      },
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "recommendedFieldApiNames": {
+      "title": "Recommended Field API Names",
+      "description": "List of API names for recommended fields",
+      "lightning:type": "lightning__listType",
+      "items": {
+        "lightning:type": "lightning__textType"
+      },
+      "lightning:isPII": false,
+      "copilotAction:isDisplayable": true,
+      "copilotAction:isUsedByPlanner": true
+    },
+    "fieldMetadataByApi": {
+      "title": "Field Metadata By API",
+      "description": "Map of apiName to field metadata object",
       "lightning:type": "lightning__textType",
       "lightning:isPII": false,
       "copilotAction:isDisplayable": true,
