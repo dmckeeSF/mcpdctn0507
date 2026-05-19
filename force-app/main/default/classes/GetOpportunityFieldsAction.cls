@@ -181,6 +181,7 @@ global with sharing class GetOpportunityFieldsAction {
             output.recommendedFieldApiNames = recommendedFields;
             output.fieldMetadataByApi = JSON.serialize(metadataByApi);
             output.isSuccess = true;
+            output.errorMessage = '';
 
         } catch (Exception e) {
             output.isSuccess = false;
