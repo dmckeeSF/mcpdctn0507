@@ -3,7 +3,7 @@
 ## Package Information
 **Namespace:** `d26`  
 **Type:** Managed Package (2GP)  
-**Current Version:** 0.1.0-19 (04tao000005cau1AAA)
+**Current Version:** 0.1.0.26 (04tao000005cbGbAAI)
 
 ---
 
@@ -57,16 +57,38 @@
 
 ### 🎨 Lightning Web Component
 
-**agentScriptSetup (3 files):**
-- Setup page with embedded Agent Script examples
-- Copy-to-clipboard functionality for two agent variants:
-  - `MANAGE_OPPORTUNITIES_AGENT` - References `d26__` namespaced actions (for package)
-  - `LOCAL_MANAGE_OPPORTUNITIES_AGENT` - References local non-namespaced actions (for demo)
-- Step-by-step instructions
+**agentScriptSetup (5 files):**
+- Enhanced setup page with 4-step guided workflow
+- Copy-to-clipboard functionality for:
+  - Agent metadata fields (Name, Developer Name, Description)
+  - Two Agent Script variants:
+    - `MANAGE_OPPORTUNITIES_AGENT` - References `d26__` namespaced GenAiFunctions (for package)
+    - `LOCAL_MANAGE_OPPORTUNITIES_AGENT` - References local non-namespaced actions (for demo)
+- Step 1: Required permissions checklist
+- Step 2: Agent creation with copy-paste fields
+- Step 3: Agent Script selection
+- Step 4: Field set customization instructions
+
+### 📱 Custom Application
+
+**d26__Agentforce_Opportunity_Manager:**
+- Custom Lightning app with standard navigation
+- Includes tabs:
+  - Agentforce Studio (standard tab)
+  - Opportunity Agent Setup (custom tab)
+- Branded with Salesforce blue theme
+- Provides integrated workflow for agent setup
+
+### 🔐 Permission Set
+
+**d26__Agentforce_Opportunity_Manager_Access:**
+- Grants visibility to the custom app
+- Grants access to the Opportunity Agent Setup tab
+- Assign to users who need to configure agents
 
 ### 📄 Custom Tab & FlexiPage
 
-- `d26__Opportunity_Agent_Setup` - Custom tab for setup page
+- `d26__Agentforce_Setup` - Custom tab for setup page
 - `d26__Agentforce_Opportunity_Setup` - FlexiPage containing the LWC
 
 ---
@@ -116,15 +138,21 @@ force-app/main/default/
 │       │   └── schema.json
 │       └── output/
 │           └── schema.json
-├── lwc/                               # 3 files
+├── lwc/                               # 5 files
 │   └── agentScriptSetup/
-│       ├── agentScriptSetup.html
-│       ├── agentScriptSetup.js       # Contains both Agent Scripts
+│       ├── agentScriptSetup.html     # Enhanced 4-step UI
+│       ├── agentScriptSetup.js       # Contains both Agent Scripts + metadata
+│       ├── agentScriptSetup.css      # Styling
+│       ├── agentScriptsData.js       # Agent Script constants
 │       └── agentScriptSetup.js-meta.xml
+├── applications/                      # 1 Custom App
+│   └── Agentforce_Opportunity_Manager.app-meta.xml
+├── permissionsets/                    # 1 Permission Set
+│   └── Agentforce_Opportunity_Manager_Access.permissionset-meta.xml
 ├── flexipages/                        # 1 FlexiPage
 │   └── Agentforce_Opportunity_Setup.flexipage-meta.xml
 └── tabs/                              # 1 Custom Tab
-    └── Opportunity_Agent_Setup.tab-meta.xml
+    └── Agentforce_Setup.tab-meta.xml
 
 local-demo/                            # NOT packaged
 ├── CreateCustomObjectActionLocal.cls
@@ -186,33 +214,37 @@ local-demo/                            # NOT packaged
 ### 1. Install Package
 
 ```bash
-sf package install --package 04tao000005cau1AAA --wait 20
+sf package install --package 04tao000005cbGbAAI --wait 20
 ```
 
-### 2. Access Setup Page
-
-Navigate to **Opportunity Agent Setup** tab.
-
-### 3. Copy Agent Script
-
-- Click "Copy Packaged Agent Script" button
-- Paste into Agent Builder (Setup → Agent Builder → New Agent → Code Editor)
-
-### 4. Create Agent in Agent Builder
-
-The Agent Script references:
-- `apex://d26__GetOpportunityFieldsAction`
-- `apex://d26__CreateCustomObjectAction`
-
-These actions are automatically discovered from the managed package.
-
-### 5. Validate & Publish
+### 2. Assign Permission Set
 
 ```bash
-sf agent validate authoring-bundle --api-name <Developer_Name>
-sf agent publish authoring-bundle --api-name <Developer_Name>
-sf agent activate --api-name <Developer_Name>
+sf org assign permset --name d26__Agentforce_Opportunity_Manager_Access
 ```
+
+Or via Setup → Permission Sets → d26__Agentforce Opportunity Manager Access → Manage Assignments
+
+### 3. Open Custom App
+
+1. Click App Launcher (waffle icon)
+2. Search for **"Agentforce Opportunity Manager"**
+3. Open the app
+
+### 4. Follow In-App Setup Instructions
+
+The **Opportunity Agent Setup** tab provides:
+- **Step 1:** Required permissions checklist
+- **Step 2:** Create agent in Agentforce Studio with copy-paste fields
+  - Name: "Opportunity Manager"
+  - Developer Name: "Opportunity_Manager"
+  - Description: Pre-generated
+- **Step 3:** Copy Agent Script (packaged or local version)
+- **Step 4:** Customize field sets (optional)
+
+The Agent Script references GenAiFunctions with `source` + `target` pattern:
+- `source: "d26__Get_Opportunity_Fields"` (GenAiFunction API name)
+- `target: "apex://d26__GetOpportunityFieldsAction"` (Apex invocation URI)
 
 ---
 
@@ -220,10 +252,12 @@ sf agent activate --api-name <Developer_Name>
 
 | Version | Package ID | Date | Changes |
 |---------|-----------|------|---------|
-| 0.1.0-19 | 04tao000005cau1AAA | 2026-05-19 | Removed GenAiPlannerBundle (runtime artifact) - CURRENT STABLE |
-| 0.1.0-18 | 04tao000005casPAAQ | 2026-05-19 | Added GenAiFunction input/output schemas (had GenAiPlannerBundle issue) |
-| 0.1.0-17 | 04tao000005capBAAQ | 2026-05-19 | Previous version (without GenAiFunctions) |
-| 0.1.0-16 | 04tao000005cVzBAAU | 2026-05-19 | Earlier version |
+| 0.1.0.26 | 04tao000005cbGbAAI | 2026-05-19 | Added custom app, permission set, enhanced setup UI - CURRENT STABLE |
+| 0.1.0.24 | 04tao000005cb5JAAQ | 2026-05-19 | Aligned Agent Script with GenAiFunction schemas (removed list types) |
+| 0.1.0.23 | 04tao000005cb3hAAA | 2026-05-19 | Added source field to Agent Script actions |
+| 0.1.0.22 | 04tao000005cb25AAA | 2026-05-19 | Fixed GenAiFunction schemas to match Apex InvocableVariables |
+| 0.1.0-19 | 04tao000005cau1AAA | 2026-05-19 | Removed GenAiPlannerBundle (runtime artifact) |
+| 0.1.0-18 | 04tao000005casPAAQ | 2026-05-19 | Added GenAiFunction input/output schemas |
 
 ---
 
@@ -243,16 +277,30 @@ sf agent activate --api-name <Developer_Name>
 
 ---
 
-## Known Issues
+## Agent Script Packaging Pattern
 
-### Packaged Agent Error
-**Error:** `Action name not found: d26__GetOpportunityFieldsAction`
+### source + target Pattern
+Agent Script actions reference packaged Apex via GenAiFunctions using both fields:
 
-**Root Cause:** Packaged Agent Script references `d26__` namespaced actions, but managed package is not installed in target org.
+```agentscript
+Get_Opportunity_Fields:
+    source: "d26__Get_Opportunity_Fields"        # GenAiFunction API name
+    target: "apex://d26__GetOpportunityFieldsAction"  # Apex invocation URI
+```
 
-**Resolution:**
-- Install managed package, OR
-- Use `LOCAL_MANAGE_OPPORTUNITIES_AGENT` variant (no namespace)
+**Why both fields?**
+- `source`: Enables metadata discovery and strict validation
+- `target`: Specifies actual Apex class to invoke
+- Together: Provides proper package distribution via GenAiFunctions
+
+### Type System Limitations
+Agent Script does NOT support list types. Only declare outputs the agent uses:
+- ✅ Supported: string, number, boolean, object, currency, date, datetime, time, timestamp, id, integer, long
+- ❌ Not supported: list of string, arrays
+
+**Impact:** GenAiFunction schemas must match Agent Script declarations exactly when `source` field is present.
+
+See `docs/AGENTSCRIPT_PACKAGED_ACTIONS.md` for complete guide.
 
 ---
 
