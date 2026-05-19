@@ -263,6 +263,9 @@ start_agent create_opportunity:
                 "recordId": string
                     description: "Created record ID"
                     label: "Record ID"
+                "recordName": string
+                    description: "Name of the created record"
+                    label: "Record Name"
                 "recordLink": string
                     description: "Rich text HTML hyperlink to the created record - use this for display"
                     label: "Record Link"
