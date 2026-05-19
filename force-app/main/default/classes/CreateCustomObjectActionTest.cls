@@ -12,9 +12,12 @@ private class CreateCustomObjectActionTest {
     @IsTest
     static void testCreateOpportunitySuccess() {
         // Arrange
+        Account testAccount = new Account(Name='Test Account');
+        insert testAccount;
+
         CreateCustomObjectAction.CreateRecordInput input = new CreateCustomObjectAction.CreateRecordInput();
         input.configurationName = 'Default';
-        input.fieldValuesJson = '{"Name":"Test Opportunity","StageName":"Prospecting","CloseDate":"2026-12-31"}';
+        input.fieldValuesJson = '{"Name":"Test Opportunity","StageName":"Prospecting","CloseDate":"2026-12-31","AccountId":"' + testAccount.Id + '"}';
 
         List<CreateCustomObjectAction.CreateRecordInput> inputs = new List<CreateCustomObjectAction.CreateRecordInput>{input};
 
@@ -28,13 +31,14 @@ private class CreateCustomObjectActionTest {
         CreateCustomObjectAction.CreateRecordOutput output = outputs[0];
         System.assertEquals(true, output.isSuccess, 'Should be successful');
         System.assertNotEquals(null, output.recordId, 'Record ID should be set');
-        System.assertEquals(null, output.errorMessage, 'Error message should be null');
+        System.assertEquals('', output.errorMessage, 'Error message should be empty');
 
         // Verify record was created
-        Opportunity opp = [SELECT Id, Name, StageName, CloseDate FROM Opportunity WHERE Id = :output.recordId];
+        Opportunity opp = [SELECT Id, Name, StageName, CloseDate, AccountId FROM Opportunity WHERE Id = :output.recordId];
         System.assertEquals('Test Opportunity', opp.Name, 'Name should match');
         System.assertEquals('Prospecting', opp.StageName, 'StageName should match');
         System.assertEquals(Date.valueOf('2026-12-31'), opp.CloseDate, 'CloseDate should match');
+        System.assertEquals(testAccount.Id, opp.AccountId, 'AccountId should match');
     }
 
     /**
@@ -43,8 +47,11 @@ private class CreateCustomObjectActionTest {
     @IsTest
     static void testCreateOpportunityWithOptionalFields() {
         // Arrange
+        Account testAccount = new Account(Name='Test Account');
+        insert testAccount;
+
         CreateCustomObjectAction.CreateRecordInput input = new CreateCustomObjectAction.CreateRecordInput();
-        input.fieldValuesJson = '{"Name":"Large Deal","StageName":"Qualification","CloseDate":"2026-12-31","Amount":100000,"Description":"Large enterprise deal","Type":"New Customer"}';
+        input.fieldValuesJson = '{"Name":"Large Deal","StageName":"Qualification","CloseDate":"2026-12-31","AccountId":"' + testAccount.Id + '","Amount":100000,"Description":"Large enterprise deal","Type":"New Customer"}';
 
         List<CreateCustomObjectAction.CreateRecordInput> inputs = new List<CreateCustomObjectAction.CreateRecordInput>{input};
 
@@ -73,8 +80,11 @@ private class CreateCustomObjectActionTest {
     @IsTest
     static void testCreateOpportunityFieldNotInFieldSet() {
         // Arrange
+        Account testAccount = new Account(Name='Test Account');
+        insert testAccount;
+
         CreateCustomObjectAction.CreateRecordInput input = new CreateCustomObjectAction.CreateRecordInput();
-        input.fieldValuesJson = '{"Name":"Test","StageName":"Prospecting","CloseDate":"2026-12-31","AccountId":"001000000000000"}';
+        input.fieldValuesJson = '{"Name":"Test","StageName":"Prospecting","CloseDate":"2026-12-31","AccountId":"' + testAccount.Id + '","Probability":50}';
 
         List<CreateCustomObjectAction.CreateRecordInput> inputs = new List<CreateCustomObjectAction.CreateRecordInput>{input};
 
@@ -172,11 +182,14 @@ private class CreateCustomObjectActionTest {
     @IsTest
     static void testCreateMultipleOpportunities() {
         // Arrange
+        Account testAccount = new Account(Name='Test Account');
+        insert testAccount;
+
         CreateCustomObjectAction.CreateRecordInput input1 = new CreateCustomObjectAction.CreateRecordInput();
-        input1.fieldValuesJson = '{"Name":"Opportunity 1","StageName":"Prospecting","CloseDate":"2026-12-31"}';
+        input1.fieldValuesJson = '{"Name":"Opportunity 1","StageName":"Prospecting","CloseDate":"2026-12-31","AccountId":"' + testAccount.Id + '"}';
 
         CreateCustomObjectAction.CreateRecordInput input2 = new CreateCustomObjectAction.CreateRecordInput();
-        input2.fieldValuesJson = '{"Name":"Opportunity 2","StageName":"Qualification","CloseDate":"2026-12-31"}';
+        input2.fieldValuesJson = '{"Name":"Opportunity 2","StageName":"Qualification","CloseDate":"2026-12-31","AccountId":"' + testAccount.Id + '"}';
 
         List<CreateCustomObjectAction.CreateRecordInput> inputs = new List<CreateCustomObjectAction.CreateRecordInput>{input1, input2};
 

@@ -24,8 +24,8 @@ private class GetOpportunityFieldsActionTest {
         // Assert
         System.assertEquals(1, outputs.size(), 'Should return one output');
         GetOpportunityFieldsAction.GetFieldsOutput output = outputs[0];
-        System.assertEquals(true, output.isSuccess, 'Should be successful');
-        System.assertEquals(null, output.errorMessage, 'Error message should be null');
+        System.assertEquals(true, output.isSuccess, 'Should be successful: ' + output.errorMessage);
+        System.assertEquals('', output.errorMessage, 'Error message should be empty');
         System.assertNotEquals(null, output.fieldsJson, 'Fields JSON should be set');
 
         // Parse JSON and verify structure
@@ -56,7 +56,7 @@ private class GetOpportunityFieldsActionTest {
 
         // Assert
         GetOpportunityFieldsAction.GetFieldsOutput output = outputs[0];
-        System.assertEquals(true, output.isSuccess, 'Should be successful');
+        System.assertEquals(true, output.isSuccess, 'Should be successful: ' + output.errorMessage);
 
         List<Object> fields = (List<Object>) JSON.deserializeUntyped(output.fieldsJson);
         Boolean foundName = false;
@@ -89,7 +89,7 @@ private class GetOpportunityFieldsActionTest {
 
         // Assert
         GetOpportunityFieldsAction.GetFieldsOutput output = outputs[0];
-        System.assertEquals(true, output.isSuccess, 'Should be successful');
+        System.assertEquals(true, output.isSuccess, 'Should be successful: ' + output.errorMessage);
 
         List<Object> fields = (List<Object>) JSON.deserializeUntyped(output.fieldsJson);
         Boolean foundStageName = false;
