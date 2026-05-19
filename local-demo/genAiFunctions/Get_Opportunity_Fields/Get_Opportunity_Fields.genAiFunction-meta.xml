@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiFunction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Returns available Opportunity fields based on configuration (Local)</description>
+    <invocationTarget>GetOpportunityFieldsActionLocal</invocationTarget>
+    <invocationTargetType>apex</invocationTargetType>
+    <isConfirmationRequired>false</isConfirmationRequired>
+    <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+    <masterLabel>Get Opportunity Fields (Local)</masterLabel>
+    <progressIndicatorMessage>Getting Opportunity fields...</progressIndicatorMessage>
+</GenAiFunction>
