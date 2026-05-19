@@ -8,8 +8,8 @@ export default class AgentScriptSetup extends LightningElement {
     demoScript = LOCAL_MANAGE_OPPORTUNITIES_AGENT;
 
     // Agent metadata for copy-paste
-    agentName = 'Opportunity Manager';
-    agentDeveloperName = 'Opportunity_Manager';
+    agentName = 'Opportunity Agent';
+    agentDeveloperName = 'Opportunity_Agent';
     agentDescription = 'AI agent that helps users create Salesforce Opportunities through natural conversation. Dynamically discovers available fields from configured field sets, collects values through guided dialogue, validates input, and creates opportunities with full field-level security. Supports multiple team configurations for Sales, Partners, and custom workflows.';
 
     handleCopyName() {
