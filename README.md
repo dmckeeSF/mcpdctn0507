@@ -153,6 +153,48 @@ returned field metadata to ask the user for values, then call "Create Opportunit
 with the same configuration name.
 ```
 
+## Agent Script Implementations
+
+### Local Version (Demo)
+**File:** `force-app/main/default/lwc/agentScriptSetup/agentScriptsData.js` → `LOCAL_MANAGE_OPPORTUNITIES_AGENT`
+
+Fully functional Agent Script using local Apex actions. Copy-paste ready for quick demos.
+
+**Actions:**
+- `GetOpportunityFieldsActionLocal`
+- `CreateCustomObjectActionLocal`
+
+**Status:** ✅ Works perfectly
+
+### Packaged Version (Work in Progress)
+**File:** `force-app/main/default/lwc/agentScriptSetup/agentScriptsData.js` → `MANAGE_OPPORTUNITIES_AGENT`
+
+Agent Script targeting managed package actions with `d26__` namespace prefix.
+
+**Actions:**
+- `d26__GetOpportunityFieldsAction`
+- `d26__CreateCustomObjectAction`
+
+**Status:** ⚠️ Work in progress
+
+**Current Error:**
+```
+Action name not found: d26__GetOpportunityFieldsAction
+```
+
+**Root Cause:** The packaged agent references Apex actions with the `d26__` namespace prefix (managed package convention), but the managed package is not installed in the target org. The org only has local, non-namespaced versions of these actions.
+
+**Attempts Made:**
+1. Added `recordLink` and `recordName` outputs to packaged Apex action to match local version
+2. Removed `source` attribute from action definitions (only needed for Flow actions, not direct Apex references)
+3. Synced packaged Apex implementation with local version (Account resolution, validation logic)
+4. Attempted removing `d26__` prefix to point to local actions (reverted per user request)
+
+**Resolution Options:**
+- Install the `d26` managed package containing the namespaced actions
+- Point packaged agent to local actions by removing `d26__` prefix
+- Deploy namespaced versions of the actions to the target org
+
 ## License
 
 MIT
