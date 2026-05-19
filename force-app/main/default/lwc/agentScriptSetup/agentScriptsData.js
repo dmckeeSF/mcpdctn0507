@@ -195,6 +195,8 @@ variables:
         description: "Field metadata JSON from GetOpportunityFieldsAction"
     field_values_json: mutable string = "{}"
         description: "User-provided field values as JSON"
+    user_confirm_create: mutable boolean = False
+        description: "User confirmation to create"
     created_oppty_id: mutable string = ""
         description: "ID of created Opportunity"
     created_oppty_link: mutable string = ""
@@ -216,9 +218,19 @@ start_agent create_opportunity:
             # Clear error message each turn
             set @variables.create_error = ""
 
-            # Guard 1: If not yet created and have field values, create the opportunity
-            # The require_user_confirmation flag on the action will handle Yes/No buttons
-            if @variables.created_oppty_id == "" and @variables.field_values_json != "{}":
+            # Clear confirmation flag when user confirms (fresh attempt)
+            if @variables.user_confirm_create == True:
+                set @variables.create_error = ""
+
+            # Guard 1: If not yet created and have field values but not confirmed, ask for confirmation
+            if @variables.created_oppty_id == "" and @variables.field_values_json != "{}" and @variables.user_confirm_create == False:
+                | Ready to create Opportunity with these details:
+                | {!@variables.field_values_json}
+                |
+                | Confirm to create?
+
+            # Guard 2: If confirmed and not yet created, create the opportunity
+            if @variables.created_oppty_id == "" and @variables.field_values_json != "{}" and @variables.user_confirm_create == True:
                 run @actions.Create_Opportunity
                     with configurationName="Default"
                     with fieldValuesJson=@variables.field_values_json
@@ -226,19 +238,21 @@ start_agent create_opportunity:
                     set @variables.created_oppty_link = @outputs.recordLink
                     set @variables.create_error = @outputs.errorMessage
 
-            # Guard 2: If create failed (has error), show error
+            # Guard 3: If create failed (has error), show error and reset confirmation
             if @variables.create_error != "":
+                set @variables.user_confirm_create = False
                 | Error creating Opportunity: {!@variables.create_error}
                 | Please provide corrected values.
 
-            # Guard 3: If created successfully (no error and has ID), show success
+            # Guard 4: If created successfully (no error and has ID), show success
             if @variables.create_error == "" and @variables.created_oppty_id != "":
                 | Opportunity {!@variables.created_oppty_link} created successfully!
 
         actions:
             set_vars: @utils.setVariables
-                description: "Set field values JSON"
+                description: "Set field values and confirmation flag"
                 with field_values_json=...
+                with user_confirm_create=...
 
     actions:
         Get_Opportunity_Fields:
@@ -266,7 +280,6 @@ start_agent create_opportunity:
             description: "Creates an Opportunity record with validated fields. Returns a rich text hyperlink (recordLink) that displays the Opportunity name as a clickable link."
             label: "Create Opportunity"
             target: "apex://CreateCustomObjectActionLocal"
-            require_user_confirmation: True
 
             inputs:
                 "configurationName": string
