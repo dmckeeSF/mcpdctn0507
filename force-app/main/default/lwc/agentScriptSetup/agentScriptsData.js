@@ -171,7 +171,11 @@ const DEMO_MANAGE_OPPORTUNITIES_AGENT = `system:
         The OwnerId will automatically be set to the running user.
         Do not do validation yourself - let the action handle it and show any errors to the user.
 
-        CRITICAL: When you receive HTML markup in your instructions (like <strong><a href="...">text</a></strong>), you MUST output it EXACTLY as provided. Do NOT paraphrase, summarize, or modify the HTML in any way. Copy it verbatim into your response.
+        CRITICAL DISPLAY INSTRUCTIONS:
+        - When an Opportunity is created successfully, the action returns a recordLink output containing HTML.
+        - You MUST display this recordLink EXACTLY as provided - do not paraphrase or modify the HTML.
+        - Do NOT show the record ID. Always use the record name as the hyperlink display text.
+        - Simply include the recordLink HTML directly in your response to render the clickable link.
     messages:
         welcome: |
             Hi! I can help you create Opportunities. What would you like to do?
@@ -191,14 +195,14 @@ variables:
         description: "Field metadata JSON from GetOpportunityFieldsAction"
     field_values_json: mutable string = "{}"
         description: "User-provided field values as JSON"
-    user_confirm_create: mutable boolean = False
-        description: "User confirmation to create"
     created_oppty_id: mutable string = ""
         description: "ID of created Opportunity"
     created_oppty_link: mutable string = ""
         description: "Rich text hyperlink to created Opportunity"
     create_error: mutable string = ""
         description: "Error from create action"
+    user_confirm_create: mutable boolean = False
+        description: "User confirmation to create"
 
 start_agent create_opportunity:
     label: "Create Opportunity"
@@ -214,19 +218,8 @@ start_agent create_opportunity:
             # Clear error message each turn
             set @variables.create_error = ""
 
-            # Clear confirmation flag when user confirms (fresh attempt)
-            if @variables.user_confirm_create == True:
-                set @variables.create_error = ""
-
-            # Guard 1: If not yet created and have field values but not confirmed, ask for confirmation
-            if @variables.created_oppty_id == "" and @variables.field_values_json != "{}" and @variables.user_confirm_create == False:
-                | Ready to create Opportunity with these details:
-                | {!@variables.field_values_json}
-                |
-                | Confirm to create?
-
-            # Guard 2: If confirmed and not yet created, create the opportunity
-            if @variables.created_oppty_id == "" and @variables.field_values_json != "{}" and @variables.user_confirm_create == True:
+            # Guard 1: If confirmed and not yet created, create the opportunity
+            if @variables.user_confirm_create == True and @variables.created_oppty_id == "":
                 run @actions.Create_Opportunity
                     with configurationName="Default"
                     with fieldValuesJson=@variables.field_values_json
@@ -234,19 +227,19 @@ start_agent create_opportunity:
                     set @variables.created_oppty_link = @outputs.recordLink
                     set @variables.create_error = @outputs.errorMessage
 
-            # Guard 3: If create failed (has error), show error and reset confirmation
+            # Guard 2: If create failed (has error), show error and reset confirmation
             if @variables.create_error != "":
                 set @variables.user_confirm_create = False
                 | Error creating Opportunity: {!@variables.create_error}
                 | Please provide corrected values.
 
-            # Guard 4: If created successfully (no error and has ID), show success with clickable link
+            # Guard 3: If created successfully (no error and has ID), show success
             if @variables.create_error == "" and @variables.created_oppty_id != "":
-                | {!@variables.created_oppty_link}
+                | Opportunity {!@variables.created_oppty_link} created successfully!
 
         actions:
             set_vars: @utils.setVariables
-                description: "Set field values and confirmation flag"
+                description: "Set field values JSON and confirmation flag"
                 with field_values_json=...
                 with user_confirm_create=...
 
