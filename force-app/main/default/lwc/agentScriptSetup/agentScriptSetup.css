@@ -19,3 +19,11 @@
 .code-container code {
     color: #080707;
 }
+
+.copy-button {
+    margin-top: 1.75rem;
+}
+
+.copy-field {
+    width: 100%;
+}

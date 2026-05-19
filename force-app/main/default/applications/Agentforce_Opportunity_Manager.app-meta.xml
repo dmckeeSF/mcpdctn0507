@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0176D3</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Setup and manage the Agentforce Opportunity Manager agent. Create employee agents that help users create opportunities with dynamic field collection.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <label>Agentforce Opportunity Manager</label>
+    <navType>Standard</navType>
+    <tabs>standard-AgentforceStudio</tabs>
+    <tabs>d26__Agentforce_Setup</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

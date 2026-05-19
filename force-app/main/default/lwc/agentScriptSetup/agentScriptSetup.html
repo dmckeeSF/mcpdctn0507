@@ -1,47 +1,161 @@
 <template>
     <lightning-card title="Opportunity Agent Setup" icon-name="custom:custom19">
         <div class="slds-p-around_medium">
-            <p class="slds-text-body_regular slds-m-bottom_medium">
-                Copy the Agent Script below and paste it into Agent Builder to create your Opportunity Management agent.
-            </p>
 
-            <lightning-tabset variant="scoped">
-                <lightning-tab label="Packaged Version (Namespaced)" value="packaged">
-                    <div class="slds-p-around_medium">
-                        <p class="slds-text-body_small slds-m-bottom_small">
-                            <strong>For packaging:</strong> Uses namespaced Apex actions (d26__). Will work after April 10, 2026 bug fix.
-                        </p>
-                        <lightning-button
-                            label="Copy Packaged Version"
-                            onclick={handleCopyPackaged}
-                            variant="brand"
-                            icon-name="utility:copy"
-                            class="slds-m-bottom_small">
-                        </lightning-button>
-                        <div class="code-container">
-                            <pre><code>{packagedScript}</code></pre>
-                        </div>
-                    </div>
-                </lightning-tab>
+            <!-- Step 1: Required Permissions -->
+            <div class="slds-box slds-m-bottom_medium">
+                <h2 class="slds-text-heading_small slds-m-bottom_small">
+                    <lightning-icon icon-name="utility:user" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Step 1: Required Permissions
+                </h2>
+                <p class="slds-text-body_small slds-m-bottom_small">
+                    Users who will create or configure agents need the following permissions:
+                </p>
+                <ul class="slds-list_dotted slds-m-left_medium slds-text-body_small">
+                    <li><strong>Permission Set:</strong> Einstein Agentforce (standard permission set)</li>
+                    <li><strong>User Permission:</strong> Create and Set Up Agents</li>
+                    <li><strong>Object Permissions:</strong> Create and Edit on Opportunity object</li>
+                </ul>
+                <p class="slds-text-body_small slds-m-top_small">
+                    <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                    <em>Admins can assign the Einstein Agentforce permission set in Setup → Users → Permission Sets.</em>
+                </p>
+            </div>
 
-                <lightning-tab label="Demo Version (Local)" value="demo">
-                    <div class="slds-p-around_medium">
-                        <p class="slds-text-body_small slds-m-bottom_small">
-                            <strong>For immediate testing:</strong> Uses non-namespaced Apex actions. Works now but not packagable.
-                        </p>
-                        <lightning-button
-                            label="Copy Demo Version"
-                            onclick={handleCopyDemo}
-                            variant="brand"
-                            icon-name="utility:copy"
-                            class="slds-m-bottom_small">
-                        </lightning-button>
-                        <div class="code-container">
-                            <pre><code>{demoScript}</code></pre>
-                        </div>
+            <!-- Step 2: Create Agent in Agentforce Studio -->
+            <div class="slds-box slds-m-bottom_medium">
+                <h2 class="slds-text-heading_small slds-m-bottom_small">
+                    <lightning-icon icon-name="utility:add" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Step 2: Create Agent in Agentforce Studio
+                </h2>
+                <p class="slds-text-body_small slds-m-bottom_small">
+                    Click the <strong>Agentforce Studio</strong> tab in this app, then click <strong>New Agent</strong> → <strong>Employee Agent</strong>.
+                </p>
+
+                <div class="slds-grid slds-gutters slds-m-bottom_small">
+                    <div class="slds-col">
+                        <lightning-input
+                            label="Name"
+                            value={agentName}
+                            readonly
+                            class="copy-field">
+                        </lightning-input>
                     </div>
-                </lightning-tab>
-            </lightning-tabset>
+                    <div class="slds-col slds-size_1-of-12">
+                        <lightning-button
+                            label="Copy"
+                            onclick={handleCopyName}
+                            icon-name="utility:copy"
+                            class="copy-button">
+                        </lightning-button>
+                    </div>
+                </div>
+
+                <div class="slds-grid slds-gutters slds-m-bottom_small">
+                    <div class="slds-col">
+                        <lightning-input
+                            label="Developer Name"
+                            value={agentDeveloperName}
+                            readonly
+                            class="copy-field">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-12">
+                        <lightning-button
+                            label="Copy"
+                            onclick={handleCopyDeveloperName}
+                            icon-name="utility:copy"
+                            class="copy-button">
+                        </lightning-button>
+                    </div>
+                </div>
+
+                <div class="slds-grid slds-gutters slds-m-bottom_small">
+                    <div class="slds-col">
+                        <lightning-textarea
+                            label="Description"
+                            value={agentDescription}
+                            readonly
+                            rows="3"
+                            class="copy-field">
+                        </lightning-textarea>
+                    </div>
+                    <div class="slds-col slds-size_1-of-12">
+                        <lightning-button
+                            label="Copy"
+                            onclick={handleCopyDescription}
+                            icon-name="utility:copy"
+                            class="copy-button">
+                        </lightning-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Copy Agent Script -->
+            <div class="slds-box slds-m-bottom_medium">
+                <h2 class="slds-text-heading_small slds-m-bottom_small">
+                    <lightning-icon icon-name="utility:code" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Step 3: Copy Agent Script
+                </h2>
+                <p class="slds-text-body_small slds-m-bottom_small">
+                    After creating your agent, paste the Agent Script below into the Agent Script editor.
+                </p>
+
+                <lightning-tabset variant="scoped">
+                    <lightning-tab label="Packaged Version (Namespaced)" value="packaged">
+                        <div class="slds-p-around_medium">
+                            <p class="slds-text-body_small slds-m-bottom_small">
+                                <strong>For managed package installations:</strong> Uses namespaced Apex actions (d26__).
+                            </p>
+                            <lightning-button
+                                label="Copy Packaged Version"
+                                onclick={handleCopyPackaged}
+                                variant="brand"
+                                icon-name="utility:copy"
+                                class="slds-m-bottom_small">
+                            </lightning-button>
+                            <div class="code-container">
+                                <pre><code>{packagedScript}</code></pre>
+                            </div>
+                        </div>
+                    </lightning-tab>
+
+                    <lightning-tab label="Demo Version (Local)" value="demo">
+                        <div class="slds-p-around_medium">
+                            <p class="slds-text-body_small slds-m-bottom_small">
+                                <strong>For local development:</strong> Uses non-namespaced Apex actions.
+                            </p>
+                            <lightning-button
+                                label="Copy Demo Version"
+                                onclick={handleCopyDemo}
+                                variant="brand"
+                                icon-name="utility:copy"
+                                class="slds-m-bottom_small">
+                            </lightning-button>
+                            <div class="code-container">
+                                <pre><code>{demoScript}</code></pre>
+                            </div>
+                        </div>
+                    </lightning-tab>
+                </lightning-tabset>
+            </div>
+
+            <!-- Step 4: Customize Field Sets (Optional) -->
+            <div class="slds-box">
+                <h2 class="slds-text-heading_small slds-m-bottom_small">
+                    <lightning-icon icon-name="utility:settings" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                    Step 4: Customize Field Sets (Optional)
+                </h2>
+                <p class="slds-text-body_small slds-m-bottom_small">
+                    To customize which fields the agent can collect:
+                </p>
+                <ol class="slds-list_ordered slds-m-left_medium slds-text-body_small">
+                    <li>Go to <strong>Setup → Object Manager → Opportunity → Field Sets</strong></li>
+                    <li>Edit <strong>d26__Agentforce_Create_Fields</strong> to add/remove fields</li>
+                    <li>For team-specific configurations, create additional Custom Metadata records in <strong>Setup → Custom Metadata Types → Agentforce Opportunity Configuration</strong></li>
+                </ol>
+            </div>
+
         </div>
     </lightning-card>
 </template>
