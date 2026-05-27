@@ -11,6 +11,6 @@
     <label>Agentforce Opportunity Manager</label>
     <navType>Standard</navType>
     <tabs>standard-AgentforceStudio</tabs>
-    <tabs>d26__Agentforce_Setup</tabs>
+    <tabs>Agentforce_Setup</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>

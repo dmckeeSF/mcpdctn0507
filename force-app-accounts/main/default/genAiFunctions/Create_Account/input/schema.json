@@ -1,0 +1,14 @@
+{
+  "required": ["fieldValuesJson"],
+  "unevaluatedProperties": false,
+  "properties": {
+    "fieldValuesJson": {
+      "title": "Field Values (JSON)",
+      "description": "JSON string with Account field values. Required: Name. Optional: Phone, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry. Example: {\"Name\":\"Acme Corp\",\"Phone\":\"555-1234\",\"BillingCity\":\"San Francisco\",\"BillingState\":\"CA\",\"BillingPostalCode\":\"94105\",\"BillingCountry\":\"US\"}",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    }
+  },
+  "lightning:type": "lightning__objectType"
+}

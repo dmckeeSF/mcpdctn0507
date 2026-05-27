@@ -1,0 +1,714 @@
+---
+description: Validate any Agentforce agent bundle for ISV packaging correctness. Run when asked to validate, review, or audit an agent, GenAiFunction, Apex action, or the overall agent bundle.
+globs:
+  - "**/*.genAiFunction-meta.xml"
+  - "**/genAiFunctions/**/schema.json"
+  - "**/*.cls"
+  - "**/*.agent"
+  - "**/*.genAiPlugin-meta.xml"
+  - "**/sfdx-project.json"
+alwaysApply: false
+---
+
+# Agentforce Agent Validator
+
+When asked to validate an Agentforce agent, run ALL checks below against the files in scope. Report every finding as PASS, WARN, or FAIL with a file path and line reference. At the end, print a summary scorecard.
+
+---
+
+## CHECK GROUP 1 — Apex Actions (managed package rules)
+
+**1.1 — Global access modifier**
+All Apex classes containing `@InvocableMethod` in a managed package MUST use `global` (not `public`) access modifier on the class and the method.
+- FAIL if class or method is `public` in a package context
+- PASS if `global with sharing class` or `global without sharing class`
+
+Fix: Change `public` to `global` on both the class declaration and the `@InvocableMethod` method.
+```apex
+// BEFORE (FAIL)
+public with sharing class CreateAccountAction {
+    @InvocableMethod(label='Create Account')
+    public static List<CreateAccountOutput> createAccount(List<CreateAccountInput> inputs) { ... }
+}
+
+// AFTER (PASS)
+global with sharing class CreateAccountAction {
+    @InvocableMethod(label='Create Account')
+    global static List<CreateAccountOutput> createAccount(List<CreateAccountInput> inputs) { ... }
+}
+```
+
+**1.2 — @JsonAccess on outer class and ALL inner classes**
+Every class that contains `@InvocableVariable` fields MUST be annotated with `@JsonAccess(serializable='always' deserializable='always')`.
+- FAIL if an inner Input or Output class is missing `@JsonAccess`
+- FAIL if the outer class is missing `@JsonAccess`
+- WARN if `@JsonAccess` is present on class but missing on any individual field that is a complex type (List<SObject>, etc.)
+
+Fix: Add `@JsonAccess(serializable='always' deserializable='always')` immediately before every class declaration that contains `@InvocableVariable` fields.
+```apex
+// BEFORE (FAIL)
+global with sharing class CreateAccountAction {
+    global class CreateAccountInput {
+        @InvocableVariable(required=true)
+        global String fieldValuesJson;
+    }
+}
+
+// AFTER (PASS)
+@JsonAccess(serializable='always' deserializable='always')
+global with sharing class CreateAccountAction {
+    @JsonAccess(serializable='always' deserializable='always')
+    global class CreateAccountInput {
+        @InvocableVariable(required=true)
+        global String fieldValuesJson;
+    }
+}
+```
+
+**1.3 — @InvocableVariable field visibility**
+All fields annotated with `@InvocableVariable` MUST be `global` in a managed package.
+- FAIL if `@InvocableVariable` field uses `public` modifier
+
+Fix: Change `public` to `global` on every `@InvocableVariable` field.
+```apex
+// BEFORE (FAIL)
+@InvocableVariable(required=true)
+public String fieldValuesJson;
+
+// AFTER (PASS)
+@InvocableVariable(required=true)
+global String fieldValuesJson;
+```
+
+**1.4 — No unhandled exceptions surfaced to the platform**
+Apex invocable methods SHOULD catch exceptions and return them in an `errorMessage` output rather than letting them propagate.
+- WARN if `@InvocableMethod` body has no try/catch
+- WARN if DmlException is not caught separately from generic Exception
+
+Fix: Wrap the method body in a try/catch that catches `DmlException` first, then generic `Exception`, and sets `errorMessage` on the output instead of rethrowing.
+```apex
+// BEFORE (WARN)
+global static List<CreateAccountOutput> createAccount(List<CreateAccountInput> inputs) {
+    List<CreateAccountOutput> outputs = new List<CreateAccountOutput>();
+    for (CreateAccountInput input : inputs) {
+        Account a = new Account(Name = input.name);
+        insert a;  // unhandled DML exception
+    }
+    return outputs;
+}
+
+// AFTER (PASS)
+global static List<CreateAccountOutput> createAccount(List<CreateAccountInput> inputs) {
+    List<CreateAccountOutput> outputs = new List<CreateAccountOutput>();
+    for (CreateAccountInput input : inputs) {
+        CreateAccountOutput output = new CreateAccountOutput();
+        output.isSuccess = false;
+        try {
+            Account a = new Account(Name = input.name);
+            insert a;
+            output.recordId = a.Id;
+            output.isSuccess = true;
+            output.errorMessage = '';
+        } catch (DmlException e) {
+            output.errorMessage = 'Database error: ' + e.getDmlMessage(0);
+        } catch (Exception e) {
+            output.errorMessage = e.getMessage();
+        }
+        outputs.add(output);
+    }
+    return outputs;
+}
+```
+
+**1.5 — List type outputs not exposed**
+If the Apex output class contains `List<String>` or any `List<*>` `@InvocableVariable`, confirm those are NOT referenced in the matching GenAiFunction output schema (Agent Script does not support list types).
+- WARN if a List field is present — flag for removal from GenAiFunction schema
+
+Fix: Keep the List field in Apex (it can still return data), but remove it from the GenAiFunction `output/schema.json` and from any Agent Script `outputs:` block. Only expose scalar types to Agent Script.
+```apex
+// Apex — keep as-is, List fields are fine here
+@InvocableVariable public String fieldsJson;           // expose this
+@InvocableVariable public List<String> requiredFields; // keep in Apex, but do NOT add to schema.json
+```
+```json
+// output/schema.json — AFTER (PASS): list property removed
+{
+  "properties": {
+    "fieldsJson":     { "lightning:type": "lightning__textType" },
+    "isSuccess":      { "lightning:type": "lightning__booleanType" },
+    "errorMessage":   { "lightning:type": "lightning__textType" }
+  }
+}
+```
+
+---
+
+## CHECK GROUP 2 — GenAiFunction Metadata
+
+**2.1 — Required directory structure**
+Each GenAiFunction MUST have this exact layout:
+```
+genAiFunctions/
+  └── <FunctionName>/
+      ├── <FunctionName>.genAiFunction-meta.xml
+      ├── input/
+      │   └── schema.json
+      └── output/
+          └── schema.json
+```
+- FAIL if `input/schema.json` is missing
+- FAIL if `output/schema.json` is missing
+- FAIL if the directory name does not match the file name (before `.genAiFunction-meta.xml`)
+
+Fix: Create the missing directories and stub schema files.
+```bash
+mkdir -p genAiFunctions/Create_Account/input genAiFunctions/Create_Account/output
+touch genAiFunctions/Create_Account/input/schema.json
+touch genAiFunctions/Create_Account/output/schema.json
+```
+Minimum valid stub for each schema.json:
+```json
+{
+  "unevaluatedProperties": false,
+  "properties": {},
+  "lightning:type": "lightning__objectType"
+}
+```
+
+**2.2 — invocationTarget namespace**
+- In source / scratch org context: `invocationTarget` MUST NOT include the namespace prefix (e.g., use `CreateAccountAction`, not `d26__CreateAccountAction`)
+- In packaged / subscriber org context: `invocationTarget` MUST include the namespace prefix
+- WARN if the target contains a namespace prefix but the file lives in an unpackaged source directory (e.g., `force-app/` or `force-app-accounts/`)
+
+Fix: Remove the namespace prefix from `invocationTarget` when deploying source to a scratch org.
+```xml
+<!-- BEFORE (WARN — source deploy context) -->
+<invocationTarget>d26__CreateAccountAction</invocationTarget>
+
+<!-- AFTER (PASS — source deploy context) -->
+<invocationTarget>CreateAccountAction</invocationTarget>
+```
+When building a package version or referencing from a subscriber org, the prefix is required:
+```xml
+<!-- Correct for packaged/subscriber context -->
+<invocationTarget>d26__CreateAccountAction</invocationTarget>
+```
+
+**2.3 — invocationTargetType**
+Must be `apex` for Apex-backed actions.
+- FAIL if missing
+
+Fix: Add the element immediately after `<invocationTarget>`.
+```xml
+<!-- BEFORE (FAIL) -->
+<invocationTarget>CreateAccountAction</invocationTarget>
+
+<!-- AFTER (PASS) -->
+<invocationTarget>CreateAccountAction</invocationTarget>
+<invocationTargetType>apex</invocationTargetType>
+```
+
+**2.4 — Required XML fields**
+The following fields MUST be present in `.genAiFunction-meta.xml`:
+- `<masterLabel>`
+- `<description>`
+- `<invocationTarget>`
+- `<invocationTargetType>`
+- WARN if `<progressIndicatorMessage>` is missing (best practice)
+
+Fix: A complete, valid `.genAiFunction-meta.xml`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiFunction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Creates a new Account record with Name and optional billing address fields</description>
+    <invocationTarget>CreateAccountAction</invocationTarget>
+    <invocationTargetType>apex</invocationTargetType>
+    <isConfirmationRequired>false</isConfirmationRequired>
+    <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+    <masterLabel>Create Account</masterLabel>
+    <progressIndicatorMessage>Creating Account...</progressIndicatorMessage>
+</GenAiFunction>
+```
+
+**2.5 — Schema uses lightning__ standard types**
+Input and output `schema.json` files MUST use `lightning__` standard types, NOT `@apexClassType`.
+Valid types: `lightning__textType`, `lightning__booleanType`, `lightning__numberType`, `lightning__objectType`, `lightning__listType`
+- FAIL if `@apexClassType` appears in any schema.json
+- FAIL if `lightning:type` is missing from any property
+
+Fix: Replace `@apexClassType` references with the appropriate `lightning__` type.
+```json
+// BEFORE (FAIL)
+{
+  "properties": {
+    "fieldValuesJson": { "type": "@apexClassType" }
+  }
+}
+
+// AFTER (PASS)
+{
+  "properties": {
+    "fieldValuesJson": {
+      "title": "Field Values (JSON)",
+      "description": "JSON string of field API names and values",
+      "lightning:type": "lightning__textType",
+      "lightning:isPII": false,
+      "copilotAction:isUserInput": false
+    }
+  }
+}
+```
+
+**2.6 — schema.json root object type**
+Both input and output schema.json MUST have `"lightning:type": "lightning__objectType"` at the root level.
+- FAIL if missing
+
+Fix: Add `"lightning:type": "lightning__objectType"` as a top-level key in the schema.
+```json
+// BEFORE (FAIL)
+{
+  "unevaluatedProperties": false,
+  "properties": { ... }
+}
+
+// AFTER (PASS)
+{
+  "unevaluatedProperties": false,
+  "properties": { ... },
+  "lightning:type": "lightning__objectType"
+}
+```
+
+**2.7 — unevaluatedProperties**
+Both schema.json files SHOULD include `"unevaluatedProperties": false`.
+- WARN if missing
+
+Fix: Add `"unevaluatedProperties": false` as a top-level key.
+```json
+{
+  "unevaluatedProperties": false,
+  "properties": { ... },
+  "lightning:type": "lightning__objectType"
+}
+```
+
+**2.8 — Required input fields marked correctly**
+If the matching Apex `@InvocableVariable` has `required=true`, the input schema.json MUST include that field name in the `"required"` array.
+- FAIL if a required Apex variable is not listed in schema `"required"`
+
+Fix: Add a `"required"` array at the root of input/schema.json listing every field where the Apex variable has `required=true`.
+```apex
+// Apex
+@InvocableVariable(label='Field Values (JSON)' required=true)
+global String fieldValuesJson;
+```
+```json
+// input/schema.json — AFTER (PASS)
+{
+  "required": ["fieldValuesJson"],
+  "unevaluatedProperties": false,
+  "properties": {
+    "fieldValuesJson": { "lightning:type": "lightning__textType" }
+  },
+  "lightning:type": "lightning__objectType"
+}
+```
+
+**2.9 — No list types in schema when used by Agent Script**
+If this GenAiFunction will be consumed by an Agent Script action (i.e., has a matching `source:` reference), the output schema MUST NOT contain `lightning__listType` properties.
+- FAIL if `lightning__listType` appears in output schema and a corresponding Agent Script `source:` reference exists
+
+Fix: Remove the `lightning__listType` property from `output/schema.json`. The Apex method can still return that data — just don't declare it in the schema.
+```json
+// BEFORE (FAIL)
+{
+  "properties": {
+    "fieldsJson":          { "lightning:type": "lightning__textType" },
+    "requiredFieldNames":  { "lightning:type": "lightning__listType" }
+  }
+}
+
+// AFTER (PASS)
+{
+  "properties": {
+    "fieldsJson":    { "lightning:type": "lightning__textType" },
+    "isSuccess":     { "lightning:type": "lightning__booleanType" },
+    "errorMessage":  { "lightning:type": "lightning__textType" }
+  }
+}
+```
+
+**2.10 — Property names match Apex @InvocableVariable names exactly**
+Every property key in input and output `schema.json` MUST match the exact field name (case-sensitive) declared with `@InvocableVariable` in the Apex class.
+- FAIL if a mismatch is detected between schema property names and Apex field names
+
+Fix: Copy the exact field name from the Apex `@InvocableVariable` declaration into the schema property key — including camelCase.
+```apex
+// Apex field name
+@InvocableVariable global String fieldValuesJson;
+```
+```json
+// BEFORE (FAIL) — wrong name
+{ "properties": { "fieldValues": { ... } } }
+
+// AFTER (PASS) — exact match
+{ "properties": { "fieldValuesJson": { ... } } }
+```
+
+---
+
+## CHECK GROUP 3 — Agent Script (.agent files)
+
+**3.1 — source + target both declared for packaged actions**
+Any action referencing a packaged (namespaced) GenAiFunction MUST declare both:
+- `source: "<namespace>__<FunctionApiName>"` — must match the GenAiFunction's full API name
+- `target: "apex://<namespace>__<ApexClassName>"` — must match the Apex class with namespace
+- FAIL if `source` is missing when action references a packaged GenAiFunction
+- FAIL if `target` is missing
+
+Fix: Add both `source` and `target` to the action declaration.
+```yaml
+# BEFORE (FAIL) — missing source and target
+actions:
+    Create_Account:
+        description: "Creates a new Account"
+        label: "Create Account"
+
+# AFTER (PASS)
+actions:
+    Create_Account:
+        description: "Creates a new Account"
+        label: "Create Account"
+        source: "d26__Create_Account"
+        target: "apex://d26__CreateAccountAction"
+        inputs:
+            "fieldValuesJson": string
+                description: "JSON string of field values"
+                label: "Field Values (JSON)"
+        outputs:
+            "recordId": string
+                description: "ID of the created Account"
+                label: "Record Id"
+            "isSuccess": boolean
+                description: "Whether creation succeeded"
+                label: "Success"
+            "errorMessage": string
+                description: "Error message if failed"
+                label: "Error Message"
+```
+
+**3.2 — Agent Script outputs match GenAiFunction output schema exactly**
+When `source` is present, the `outputs:` block in the Agent Script action MUST declare exactly the same property names as the GenAiFunction `output/schema.json`. No extras, no omissions.
+- FAIL if a GenAiFunction output property is missing from the Agent Script outputs block
+- FAIL if the Agent Script declares an output not present in the GenAiFunction schema
+
+Fix: Open the GenAiFunction `output/schema.json` and mirror every property key in the Agent Script `outputs:` block. Remove any Agent Script outputs not in the schema, and add any schema properties missing from Agent Script.
+```json
+// output/schema.json has: recordId, recordName, recordLink, isSuccess, errorMessage
+```
+```yaml
+# BEFORE (FAIL) — recordName and recordLink missing, extra field present
+outputs:
+    "recordId": string
+    "isSuccess": boolean
+    "someExtraField": string   # not in schema
+
+# AFTER (PASS) — exact match
+outputs:
+    "recordId": string
+        description: "ID of the created record"
+        label: "Record Id"
+    "recordName": string
+        description: "Name of the created record"
+        label: "Record Name"
+    "recordLink": string
+        description: "Rich text hyperlink to the record"
+        label: "Record Link"
+    "isSuccess": boolean
+        description: "Whether creation succeeded"
+        label: "Success"
+    "errorMessage": string
+        description: "Error message if failed"
+        label: "Error Message"
+```
+
+**3.3 — No list types in Agent Script outputs**
+Agent Script does NOT support `list of string`, `list of number`, or any array type.
+- FAIL if any output declares `list of <type>`
+
+Fix: Remove list-type outputs entirely from the Agent Script `outputs:` block. Also remove the corresponding property from the GenAiFunction `output/schema.json` (see check 2.9). Serialize list data as a JSON string in Apex and declare it as `string` instead.
+```yaml
+# BEFORE (FAIL)
+outputs:
+    "requiredFieldNames": list of string
+
+# AFTER (PASS) — serialize to JSON string in Apex, expose as string
+outputs:
+    "requiredFieldNamesJson": string
+        description: "JSON array of required field names"
+        label: "Required Field Names (JSON)"
+```
+
+**3.4 — Supported Agent Script types only**
+Valid Agent Script types: `string`, `number`, `boolean`, `object`, `currency`, `date`, `datetime`, `time`, `timestamp`, `id`, `integer`, `long`
+- FAIL if any input or output uses an unsupported type
+
+Fix: Replace unsupported types with their nearest valid equivalent.
+```yaml
+# BEFORE (FAIL)
+outputs:
+    "count": int          # not valid
+    "tags": array         # not valid
+
+# AFTER (PASS)
+outputs:
+    "count": integer
+    "tags": string        # serialize array as JSON string
+```
+
+**3.5 — source API name matches full namespaced GenAiFunction name**
+The `source:` value must equal `<namespace>__<FunctionDeveloperName>` where `FunctionDeveloperName` matches the GenAiFunction directory name.
+- FAIL if source value does not match the GenAiFunction developer name (with namespace)
+
+Fix: The `source` value must be `<namespace>__` + the exact GenAiFunction directory name.
+```
+# GenAiFunction directory: genAiFunctions/Create_Account/
+# Namespace: d26
+
+# BEFORE (FAIL)
+source: "d26__CreateAccount"      # wrong — missing underscore separator
+
+# AFTER (PASS)
+source: "d26__Create_Account"     # matches directory name exactly
+```
+
+**3.6 — Agent Script is NOT packaged**
+`AiAuthoringBundle` / `.agent` files are not packageable in 2GP. They must be distributed via an LWC component, documentation, or the AppExchange listing.
+- WARN if `.agent` files are found inside a `packageDirectory` path in `sfdx-project.json`
+
+Fix: Move the Agent Script source into an LWC JavaScript file as a string constant and provide a copy-to-clipboard UI. Remove any `.agent` / `AiAuthoringBundle` entries from `package.xml`.
+```javascript
+// lwc/agentScriptSetup/agentScriptsData.js
+const CREATE_ACCOUNT_AGENT = `
+system:
+    instructions: |
+        You help users create Account records in Salesforce.
+...
+`;
+export { CREATE_ACCOUNT_AGENT };
+```
+Remove from `package.xml`:
+```xml
+<!-- REMOVE THIS BLOCK -->
+<types>
+    <members>MyAgent</members>
+    <name>AiAuthoringBundle</name>
+</types>
+```
+
+---
+
+## CHECK GROUP 4 — GenAiPlugin (optional but validated if present)
+
+**4.1 — GenAiPlugin references functions by API name without namespace**
+`<genAiFunctionName>` inside a GenAiPlugin must use the bare developer name (no namespace prefix).
+- FAIL if a namespace prefix appears in `<genAiFunctionName>`
+
+Fix: Remove the namespace prefix from every `<genAiFunctionName>` in the plugin file.
+```xml
+<!-- BEFORE (FAIL) -->
+<genAiFunctions>
+    <genAiFunctionName>d26__Create_Account</genAiFunctionName>
+</genAiFunctions>
+
+<!-- AFTER (PASS) -->
+<genAiFunctions>
+    <genAiFunctionName>Create_Account</genAiFunctionName>
+</genAiFunctions>
+```
+
+**4.2 — Referenced functions exist**
+Every `<genAiFunctionName>` listed in the plugin must correspond to a GenAiFunction directory in the project.
+- FAIL if a referenced function name has no matching GenAiFunction directory
+
+Fix: Either create the missing GenAiFunction directory (see check 2.1 for structure), or remove the stale reference from the plugin.
+```xml
+<!-- Remove this line if Create_Account directory does not exist -->
+<genAiFunctionName>Create_Account</genAiFunctionName>
+```
+
+---
+
+## CHECK GROUP 5 — Packaging Configuration
+
+**5.1 — sfdx-project.json namespace**
+A namespace must be set at the project level in `sfdx-project.json`.
+- WARN if `"namespace"` is absent or empty
+
+Fix: Add the `"namespace"` key to the root of `sfdx-project.json`. The value must match the namespace registered in your Dev Hub org.
+```json
+// BEFORE (WARN)
+{
+  "packageDirectories": [ ... ],
+  "name": "My Package"
+}
+
+// AFTER (PASS)
+{
+  "packageDirectories": [ ... ],
+  "name": "My Package",
+  "namespace": "d26",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "66.0"
+}
+```
+
+**5.2 — packageMetadataAccess for PromptTemplate**
+If the project includes PromptTemplate metadata, `sfdx-project.json` must include `"EinsteinGPTPromptTemplateManager"` in `packageMetadataAccess`.
+- WARN if PromptTemplates exist but `packageMetadataAccess` does not include `EinsteinGPTPromptTemplateManager`
+
+Fix: Add `packageMetadataAccess` to the relevant `packageDirectories` entry.
+```json
+// AFTER (PASS)
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "package": "My Package",
+      "versionNumber": "0.1.0.NEXT",
+      "packageMetadataAccess": [
+        "EinsteinGPTPromptTemplateManager"
+      ]
+    }
+  ]
+}
+```
+
+**5.3 — Extension packages declare dependencies**
+If multiple `packageDirectories` exist, any package that relies on types from another package MUST declare a `dependencies` entry.
+- WARN if a second packageDirectory is present and has no `dependencies` declared
+
+Fix: Add a `dependencies` array to the extension package's directory entry referencing the base package.
+```json
+// BEFORE (WARN)
+{
+  "path": "force-app-accounts",
+  "package": "Agentforce Account Manager",
+  "versionNumber": "0.1.0.NEXT"
+}
+
+// AFTER (PASS)
+{
+  "path": "force-app-accounts",
+  "package": "Agentforce Account Manager",
+  "versionNumber": "0.1.0.NEXT",
+  "dependencies": [
+    {
+      "package": "Agentforce Opportunity Manager",
+      "versionNumber": "0.1.0.LATEST"
+    }
+  ]
+}
+```
+
+**5.4 — No AiAuthoringBundle in package manifest**
+`package.xml` or `package-*.xml` manifests MUST NOT include `<name>AiAuthoringBundle</name>`.
+- FAIL if present
+
+Fix: Remove the entire `<types>` block for `AiAuthoringBundle` from the manifest.
+```xml
+<!-- REMOVE THIS BLOCK (FAIL) -->
+<types>
+    <members>MyAgent</members>
+    <name>AiAuthoringBundle</name>
+</types>
+```
+
+---
+
+## CHECK GROUP 6 — Scratch Org Definition
+
+**6.1 — Required Agentforce features**
+If a scratch org definition file is present, it MUST include:
+- `"EinsteinGPT"` in features
+- `"EnableAIGenerative"` in features
+- `"SalesforceAgent"` in features
+- WARN for each missing feature
+
+Fix: Add the missing features to the `"features"` array in the scratch org definition file.
+```json
+// AFTER (PASS)
+{
+  "orgName": "Agentforce Dev",
+  "edition": "Developer",
+  "features": [
+    "EinsteinGPT",
+    "EnableAIGenerative",
+    "SalesforceAgent"
+  ],
+  "settings": {
+    "aiSettings": {
+      "enableEinsteinGPT": true,
+      "enableAgentforce": true
+    }
+  }
+}
+```
+
+**6.2 — Einstein settings enabled**
+`aiSettings.enableEinsteinGPT` and `aiSettings.enableAgentforce` MUST be `true`.
+- WARN if either is absent or false
+
+Fix: Add or correct the `aiSettings` block in the scratch org definition `settings`.
+```json
+// BEFORE (WARN)
+{
+  "settings": {}
+}
+
+// AFTER (PASS)
+{
+  "settings": {
+    "aiSettings": {
+      "enableEinsteinGPT": true,
+      "enableAgentforce": true
+    }
+  }
+}
+```
+
+---
+
+## Validation Output Format
+
+Report findings in this structure:
+
+```
+AGENTFORCE AGENT VALIDATION REPORT
+===================================
+
+[FAIL] 2.2 — invocationTarget namespace
+  File: force-app/main/default/genAiFunctions/Create_Account/Create_Account.genAiFunction-meta.xml
+  Issue: invocationTarget 'd26__CreateAccountAction' contains namespace prefix — remove for source deploy
+
+[WARN] 1.4 — No unhandled exceptions surfaced
+  File: force-app/main/default/classes/CreateAccountAction.cls:45
+  Issue: @InvocableMethod body has no DmlException catch block
+
+[PASS] 1.1 — Global access modifier
+  File: force-app/main/default/classes/CreateAccountAction.cls
+
+...
+
+SCORECARD
+---------
+FAIL : 2
+WARN : 3
+PASS : 18
+Total checks run: 23
+
+Priority fixes:
+1. [FAIL items listed with file + line]
+```
+
+Always list FAILs first, then WARNs, then PASSes. If a check cannot be evaluated (e.g., no Agent Script files present), mark it as SKIP with a reason.

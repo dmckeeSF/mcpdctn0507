@@ -11,6 +11,21 @@
       "packageMetadataAccess": [
         "EinsteinGPTPromptTemplateManager"
       ]
+    },
+    {
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT",
+      "path": "force-app-accounts",
+      "default": false,
+      "package": "Agentforce Account Manager",
+      "versionDescription": "Extension package for Account creation with billing address support",
+      "definitionFile": "config/project-scratch-def.json",
+      "dependencies": [
+        {
+          "package": "Agentforce Opportunity Manager",
+          "versionNumber": "0.1.0.LATEST"
+        }
+      ]
     }
   ],
   "name": "Agentforce Opportunity Manager",
@@ -43,6 +58,8 @@
     "Agentforce Opportunity Manager@0.1.0-24": "04tao000005cb5JAAQ",
     "Agentforce Opportunity Manager@0.1.0-26": "04tao000005cbGbAAI",
     "Agentforce Opportunity Manager@0.1.0-27": "04tao000005cbJpAAI",
-    "Agentforce Opportunity Manager@0.1.0-28": "04tao000005cbLRAAY"
+    "Agentforce Opportunity Manager@0.1.0-28": "04tao000005cbLRAAY",
+    "Agentforce Account Manager": "0Hoao0000003UG5CAM",
+    "Agentforce Account Manager@0.1.0-1": "04tao000005cgjJAAQ"
   }
 }
